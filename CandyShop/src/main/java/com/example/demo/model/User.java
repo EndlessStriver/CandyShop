@@ -1,6 +1,9 @@
-package model;
+package com.example.demo.model;
 
 import java.time.LocalDate;
+
+import com.example.demo.model.enums.Gender;
+import com.example.demo.model.enums.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,8 +14,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import model.enums.Gender;
-import model.enums.Role;
 
 @Data
 @NoArgsConstructor
