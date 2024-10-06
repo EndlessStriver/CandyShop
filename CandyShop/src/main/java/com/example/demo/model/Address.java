@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -19,7 +20,7 @@ public class Address {
 	
 	@Id
 	@Column(name = "address_id")
-	private String id;
+	private String addressId;
 	
 	@Column(name = "customer_name", nullable = false)
 	private String customerName;
@@ -30,15 +31,19 @@ public class Address {
 	@Column(name = "address", nullable = false)
 	private String address;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "province_id")
 	private Province province;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "district_id")
 	private District district;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "ward_id")
 	private Ward ward;
+	
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "user_id")
+	private User user;
 }

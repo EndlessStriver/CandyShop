@@ -17,20 +17,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "district")
-public class District {
+@Table(name = "category")
+public class Category {
 	
 	@Id
-	@Column(name = "district_id")
-	private String districtId;
+	@Column(name = "category_id")
+	private String categoryId;
 	
-	@Column(name = "district_name", nullable = false, unique = true)
-	private String districtName;
+	@Column(name = "category_name", nullable = false, unique = true)
+	private String categoryName;
 	
-	@OneToMany(mappedBy = "district", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	private List<Address> addresses;
-	
-	@OneToMany(mappedBy = "district", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
-	private List<Order> orders;
-	
+	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<SupCategory> subCategories;
 }

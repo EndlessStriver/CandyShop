@@ -24,11 +24,14 @@ public class Ward {
 	
 	@Id
 	@Column(name = "ward_id")
-	private String id;
+	private String wardId;
 	
 	@Column(name = "ward_name", nullable = false, unique = true)
-	private String name;
+	private String wardName;
 	
-	@OneToMany(mappedBy = "ward", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+	@OneToMany(mappedBy = "ward", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private List<Address> addresses;
+	
+	@OneToMany(mappedBy = "ward", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	private List<Order> orders;
 }

@@ -22,12 +22,15 @@ public class Province {
 	
 	@Id
 	@Column(name = "province_id")
-	private String id;
+	private String provinceId;
 	
 	@Column(name = "province_name", nullable = false, unique = true)
-	private String name;
+	private String provinceName;
 	
-	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	private List<Address> addresses;
+	
+	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+	private List<Order> orders;
 	
 }
