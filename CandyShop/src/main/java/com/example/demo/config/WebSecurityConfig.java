@@ -41,6 +41,7 @@ public class WebSecurityConfig {
 		http.cors(cors -> cors.disable())
 			.authorizeHttpRequests(authorizeRequests -> authorizeRequests
 				.requestMatchers(HttpMethod.POST, "api/auth/login").permitAll()
+				.requestMatchers(HttpMethod.POST, "api/auth/register").permitAll()
 				.anyRequest().authenticated()
 			)
 			.formLogin(formLogin -> formLogin.disable())
