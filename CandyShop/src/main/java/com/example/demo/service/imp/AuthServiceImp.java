@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.RegisterRequestDTO;
 import com.example.demo.exception.LoginFailedException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
@@ -30,7 +31,7 @@ public class AuthServiceImp implements AuthService {
 	}
 
 	@Override
-	public void login(LoginRequestDTO loginRequestDTO) {
+	public void login(LoginRequestDTO loginRequestDTO) throws Exception, LoginFailedException {
 		try {
 			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
 					loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
@@ -42,11 +43,15 @@ public class AuthServiceImp implements AuthService {
 			throw e;
 		}
 	}
-	
+
 	@Transactional
 	@Override
-	public User register(RegisterRequestDTO registerRequestDTO) throws Exception {
+	public User register(RegisterRequestDTO registerRequestDTO) throws Exception, ResourceNotFoundException {
 		try {
+
+			if (userRepository.existsByUserName(registerRequestDTO.getUserName()) == true)
+				throw new ResourceNotFoundException("Username already exists");
+
 			User user = new User();
 			user.setUserName(registerRequestDTO.getUserName());
 			user.setFirstName(registerRequestDTO.getFirstName());
@@ -56,7 +61,11 @@ public class AuthServiceImp implements AuthService {
 			user.setGender(registerRequestDTO.getGender());
 			user.setPassword(bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()));
 			user.setBirthDay(registerRequestDTO.getBirthDay());
+
 			return userRepository.save(user);
+
+		} catch (ResourceNotFoundException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new Exception("Error occurred while saving the user");
 		}

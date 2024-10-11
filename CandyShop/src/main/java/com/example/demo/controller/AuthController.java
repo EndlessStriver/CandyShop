@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.RegisterRequestDTO;
+import com.example.demo.exception.LoginFailedException;
 import com.example.demo.model.User;
 import com.example.demo.service.AuthService;
 
@@ -24,14 +25,13 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<ApiResponseDTO<Void>> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+	public ResponseEntity<ApiResponseDTO<Void>> login(@RequestBody LoginRequestDTO loginRequestDTO) throws LoginFailedException, Exception {
 		authService.login(loginRequestDTO);
 		return ResponseEntity.ok(new ApiResponseDTO<>("Login Success!", HttpStatus.OK.value(), null));
 	}
 	
 	@PostMapping("/register")
 	public ResponseEntity<ApiResponseDTO<User>> register(@RequestBody RegisterRequestDTO registerRequestDTO) throws Exception {
-		System.out.println("da vao");
         User user = authService.register(registerRequestDTO);
         return ResponseEntity.ok(new ApiResponseDTO<User>("Register Success!", HttpStatus.OK.value(), user));
     }

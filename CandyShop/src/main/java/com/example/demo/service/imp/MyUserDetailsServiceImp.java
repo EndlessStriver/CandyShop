@@ -20,9 +20,9 @@ public class MyUserDetailsServiceImp implements MyUserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User user = userRepository.findByUserName(username);
-
-		if (user == null) throw new UsernameNotFoundException("User not found");
+		
+		User user = userRepository.findByUserName(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 		
 		SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().toString());
 		
