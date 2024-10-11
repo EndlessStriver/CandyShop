@@ -48,6 +48,10 @@ public class Province {
 	@JsonIgnore
 	private List<Order> orders;
 	
+	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<District> districts;
+	
 	@PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

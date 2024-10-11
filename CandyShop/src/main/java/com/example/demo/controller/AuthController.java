@@ -26,13 +26,13 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<ApiResponseDTO<Void>> login(@RequestBody LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
+	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
 		authService.login(loginRequestDTO);
 		return ResponseEntity.ok(new ApiResponseDTO<>("Login Success!", HttpStatus.OK.value(), null));
 	}
 	
 	@PostMapping("/register")
-	public ResponseEntity<ApiResponseDTO<User>> register(@RequestBody RegisterRequestDTO registerRequestDTO) throws Exception, ResourceConflictException {
+	public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequestDTO) throws Exception, ResourceConflictException {
         User user = authService.register(registerRequestDTO);
         return ResponseEntity.ok(new ApiResponseDTO<User>("Register Success!", HttpStatus.OK.value(), user));
     }
