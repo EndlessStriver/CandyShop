@@ -24,11 +24,18 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.NOT_FOUND);
 	}
 	
-	@ExceptionHandler(LoginFailedException.class)
-	public ResponseEntity<ApiResponseDTO<Void>> handleLoginFailedException(LoginFailedException ex){
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<ApiResponseDTO<Void>> handleLoginFailedException(UnauthorizedException ex){
 		String errorMessage = ex.getMessage();
 		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.UNAUTHORIZED.value(), null);
 		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.UNAUTHORIZED);
-	} 
+	}
+	
+	@ExceptionHandler(ResourceConflictException.class)
+	public ResponseEntity<ApiResponseDTO<Void>> handleLoginFailedException(ResourceConflictException ex){
+		String errorMessage = ex.getMessage();
+		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.CONFLICT.value(), null);
+		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.CONFLICT);
+	}
 	
 }

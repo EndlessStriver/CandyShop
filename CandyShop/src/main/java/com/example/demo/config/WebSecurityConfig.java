@@ -40,9 +40,7 @@ public class WebSecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.cors(cors -> cors.disable())
 			.authorizeHttpRequests(authorizeRequests -> authorizeRequests
-				.requestMatchers(HttpMethod.POST, "api/auth/login").permitAll()
-				.requestMatchers(HttpMethod.POST, "api/auth/register").permitAll()
-				.anyRequest().authenticated()
+				.anyRequest().permitAll()
 			)
 			.formLogin(formLogin -> formLogin.disable())
 			.httpBasic(httpBasic -> httpBasic.disable())

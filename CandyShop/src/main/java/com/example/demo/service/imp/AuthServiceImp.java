@@ -1,5 +1,6 @@
 package com.example.demo.service.imp;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.RegisterRequestDTO;
-import com.example.demo.exception.LoginFailedException;
-import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.ResourceConflictException;
+import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
@@ -31,14 +32,13 @@ public class AuthServiceImp implements AuthService {
 	}
 
 	@Override
-	public void login(LoginRequestDTO loginRequestDTO) throws Exception, LoginFailedException {
+	public void login(LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
 		try {
 			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
 					loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
-			if (!authentication.isAuthenticated())
-				throw new LoginFailedException("Invalid username or password");
+			authentication.isAuthenticated();
 		} catch (BadCredentialsException e) {
-			throw new LoginFailedException("Invalid username or password");
+			throw new UnauthorizedException(e.getMessage());
 		} catch (Exception e) {
 			throw e;
 		}
@@ -46,11 +46,11 @@ public class AuthServiceImp implements AuthService {
 
 	@Transactional
 	@Override
-	public User register(RegisterRequestDTO registerRequestDTO) throws Exception, ResourceNotFoundException {
+	public User register(RegisterRequestDTO registerRequestDTO) throws Exception, ResourceConflictException {
 		try {
 
 			if (userRepository.existsByUserName(registerRequestDTO.getUserName()) == true)
-				throw new ResourceNotFoundException("Username already exists");
+				throw new ResourceConflictException("Username already exists");
 
 			User user = new User();
 			user.setUserName(registerRequestDTO.getUserName());
@@ -64,10 +64,10 @@ public class AuthServiceImp implements AuthService {
 
 			return userRepository.save(user);
 
-		} catch (ResourceNotFoundException e) {
+		} catch (DataIntegrityViolationException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new Exception("Error occurred while saving the user");
+			throw e;
 		}
 	}
 

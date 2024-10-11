@@ -7,5 +7,7 @@ import com.example.demo.model.Province;
 
 @Repository
 public interface ProvinceRepository extends JpaRepository<Province, String>{
-
+	
+	boolean existsByProvinceName(String name);
+	
 }

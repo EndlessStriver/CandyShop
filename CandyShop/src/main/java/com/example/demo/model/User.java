@@ -67,10 +67,10 @@ public class User {
 	@Column(name = "birthday", nullable = false)
 	private LocalDate birthDay;
 	
-	@Column(name = "create_at", nullable = false)
+	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 	
-	@Column(name = "update_at", nullable = false)
+	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 	
 	@Enumerated(EnumType.STRING)

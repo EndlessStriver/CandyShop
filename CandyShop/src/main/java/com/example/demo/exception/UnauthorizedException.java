@@ -1,10 +1,10 @@
 package com.example.demo.exception;
 
-public class LoginFailedException extends RuntimeException {
+public class UnauthorizedException extends RuntimeException {
 	
 	private static final long serialVersionUID = 1L;
 
-	public LoginFailedException(String message) {
+	public UnauthorizedException(String message) {
 		super(message);
 	}
 	
