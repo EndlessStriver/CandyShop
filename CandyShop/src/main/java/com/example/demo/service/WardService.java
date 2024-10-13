@@ -9,14 +9,14 @@ import com.example.demo.model.Ward;
 
 public interface WardService {
 	
-	Ward createWard(String districtId, WardRequestDTO wardRequestDTO) throws Exception, ResourceConflictException;
+	Ward createWard(String districtId, WardRequestDTO wardRequestDTO) throws Exception, ResourceNotFoundException;
 
-	Ward updateWard(WardRequestDTO wardRequestDTO) throws Exception;
+	Ward updateWard(String wardId, WardRequestDTO wardRequestDTO) throws Exception, ResourceNotFoundException;
 
 	void deleteWard(String wardId) throws Exception, ResourceNotFoundException;
 
-	Province getWard(String wardId) throws Exception, ResourceNotFoundException;
+	Ward getWard(String wardId) throws Exception, ResourceNotFoundException;
 
-	PagedResponseDTO<Ward> getWards(int page, int limit, String sortField, String sortOder) throws Exception;
+	PagedResponseDTO<Ward> getWardsByDistrictId(String districtId, int page, int limit, String sortField, String sortOder) throws Exception;
 	
 }

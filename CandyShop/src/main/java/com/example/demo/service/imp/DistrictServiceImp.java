@@ -18,11 +18,11 @@ import com.example.demo.repository.ProvinceRepository;
 import com.example.demo.service.DistrictService;
 
 @Service
-public class DistrictServiceImp implements DistrictService{
-	
+public class DistrictServiceImp implements DistrictService {
+
 	private DistrictRepository districtRepository;
 	private ProvinceRepository provinceRepository;
-	
+
 	public DistrictServiceImp(DistrictRepository districtRepository, ProvinceRepository provinceRepository) {
 		this.districtRepository = districtRepository;
 		this.provinceRepository = provinceRepository;
@@ -30,7 +30,8 @@ public class DistrictServiceImp implements DistrictService{
 
 	@Override
 	@Transactional
-	public District createDistrict(String provinceId, DistrictRequestDTO districtRequestDTO) throws Exception, ResourceConflictException {
+	public District createDistrict(String provinceId, DistrictRequestDTO districtRequestDTO)
+			throws Exception, ResourceConflictException, ResourceNotFoundException {
 		Province province = provinceRepository.findById(provinceId)
 				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
 		if (districtRepository.existsByDistrictName(districtRequestDTO.getDistrictName()))
@@ -43,13 +44,14 @@ public class DistrictServiceImp implements DistrictService{
 
 	@Override
 	@Transactional
-	public District updateDistrict(String districtId, DistrictRequestDTO districtRequestDTO) throws Exception, ResourceNotFoundException {
+	public District updateDistrict(String districtId, DistrictRequestDTO districtRequestDTO)
+			throws Exception, ResourceNotFoundException {
 		District district = districtRepository.findById(districtId)
-                .orElseThrow(() -> new ResourceNotFoundException("District not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
 		if (district.getDistrictName().equals(districtRequestDTO.getDistrictName()))
 			throw new ResourceConflictException("No changes were made to the district name");
-        district.setDistrictName(districtRequestDTO.getDistrictName());
-        return districtRepository.save(district);
+		district.setDistrictName(districtRequestDTO.getDistrictName());
+		return districtRepository.save(district);
 	}
 
 	@Override
@@ -67,14 +69,14 @@ public class DistrictServiceImp implements DistrictService{
 	}
 
 	@Override
-	public PagedResponseDTO<District> getDistrictsByProvinceId(String provinceId, int page, int limit, String sortField, String sortOder)
-			throws Exception {
+	public PagedResponseDTO<District> getDistrictsByProvinceId(String provinceId, int page, int limit, String sortField,
+			String sortOder) throws Exception {
 		Sort sort = sortOder.equalsIgnoreCase("desc") ? Sort.by(sortField).descending()
 				: Sort.by(sortField).ascending();
 		Pageable pageable = PageRequest.of(page, limit, sort);
 		Page<District> pageProvince = districtRepository.findByProvinceProvinceId(provinceId, pageable);
-		return new PagedResponseDTO<District>(pageProvince.getContent(), pageProvince.getNumber(), pageProvince.getSize(),
-				pageProvince.getTotalElements(), pageProvince.getTotalPages());
+		return new PagedResponseDTO<District>(pageProvince.getContent(), pageProvince.getNumber(),
+				pageProvince.getSize(), pageProvince.getTotalElements(), pageProvince.getTotalPages());
 	}
 
 }

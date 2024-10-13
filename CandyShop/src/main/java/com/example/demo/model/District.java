@@ -54,6 +54,10 @@ public class District {
 	@JoinColumn(name = "province_id", nullable = false)
 	private Province province;
 	
+	@OneToMany(mappedBy = "district", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Ward> wards;
+	
 	@PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
