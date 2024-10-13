@@ -16,7 +16,6 @@ public interface DistrictRepository extends JpaRepository<District, String>{
 
 	boolean existsByDistrictName(String districtName);
 	
-	@Query("SELECT d FROM District d WHERE d.province.provinceId = :provinceId")
 	Page<District> findByProvinceProvinceId(@Param("provinceId") String provinceId, Pageable pageable);
 	
 	Optional<District> findByDistrictIdAndProvinceProvinceId(String districtId, String provinceId);

@@ -57,10 +57,8 @@ public class LocationController {
 	@PostMapping
 	public ResponseEntity<?> createProvince(@RequestBody ProvinceRequestDTO provinceRequestDTO)
 			throws ResourceConflictException, Exception {
-		Province province = new Province();
-		province.setProvinceName(provinceRequestDTO.getProvinceName());
 
-		Province myProvince = provinceService.createProvince(province);
+		Province myProvince = provinceService.createProvince(provinceRequestDTO);
 
 		ApiResponseDTO<Province> apiResponseDTO = new ApiResponseDTO<Province>("Create province success!",
 				HttpStatus.OK.value(), myProvince);
@@ -71,11 +69,7 @@ public class LocationController {
 	public ResponseEntity<?> updateProvince(@PathVariable String idProvince,
 			@RequestBody ProvinceRequestDTO provinceRequestDTO)
 			throws ResourceNotFoundException, ResourceConflictException, Exception {
-		Province province = provinceService.getProvince(idProvince);
-		if (provinceRequestDTO.getProvinceName().equals(province.getProvinceName()))
-			throw new ResourceConflictException("No changes were made to the province name");
-		province.setProvinceName(provinceRequestDTO.getProvinceName());
-		Province myProvince = provinceService.updateProvince(province);
+		Province myProvince = provinceService.updateProvince(idProvince, provinceRequestDTO);
 		return ResponseEntity
 				.ok(new ApiResponseDTO<Province>("Update province success!", HttpStatus.OK.value(), myProvince));
 	}

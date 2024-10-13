@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.PagedResponseDTO;
+import com.example.demo.dto.ProvinceRequestDTO;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Province;
@@ -25,29 +26,35 @@ public class ProvinceServiceImp implements ProvinceService {
 
 	@Override
 	@Transactional
-	public Province createProvince(Province province) throws Exception, ResourceConflictException {
-		if (provinceRepository.existsByProvinceName(province.getProvinceName()))
+	public Province createProvince(ProvinceRequestDTO provinceRequestDTO) throws Exception, ResourceConflictException {
+		if (provinceRepository.existsByProvinceName(provinceRequestDTO.getProvinceName()))
 			throw new ResourceConflictException("Province name already exists");
+		Province province = new Province();
+		province.setProvinceName(provinceRequestDTO.getProvinceName());
+		return provinceRepository.save(province);
+	}
+	
+	@Override
+	@Transactional
+	public Province updateProvince(String provinceId, ProvinceRequestDTO provinceRequestDTO) throws Exception {
+		Province province = provinceRepository.findById(provinceId)
+				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+		if (provinceRequestDTO.getProvinceName().equals(province.getProvinceName()))
+			throw new ResourceConflictException("No changes were made to the province name");
 		return provinceRepository.save(province);
 	}
 
 	@Override
 	@Transactional
-	public Province updateProvince(Province province) throws Exception {
-		return provinceRepository.save(province);
-	}
-
-	@Override
-	@Transactional
-	public void deleteProvince(String id) throws Exception, ResourceNotFoundException {
-		Province province = provinceRepository.findById(id)
+	public void deleteProvince(String provinceId) throws Exception, ResourceNotFoundException {
+		Province province = provinceRepository.findById(provinceId)
 				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
 		provinceRepository.delete(province);
 	}
 
 	@Override
-	public Province getProvince(String id) throws Exception, ResourceNotFoundException {
-		return provinceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+	public Province getProvince(String provinceId) throws Exception, ResourceNotFoundException {
+		return provinceRepository.findById(provinceId).orElseThrow(() -> new ResourceNotFoundException("Province not found"));
 	}
 
 	@Override
