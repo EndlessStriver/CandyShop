@@ -10,12 +10,12 @@ public interface DistrictService {
 	
 	District createDistrict(String provinceId, DistrictRequestDTO districtRequestDTO) throws Exception, ResourceConflictException;
 	
-	District updateDistrict(String provinceId, String districtId, DistrictRequestDTO districtRequestDTO) throws Exception;
+	District updateDistrict(String districtId, DistrictRequestDTO districtRequestDTO) throws Exception;
 	
-	void deleteDistrict(String provinceId, String districtId) throws Exception, ResourceNotFoundException;
+	void deleteDistrict(String districtId) throws Exception, ResourceNotFoundException;
 	
-	District getDistrict(String provinceId, String districtId) throws Exception, ResourceNotFoundException;
+	District getDistrict(String districtId) throws Exception, ResourceNotFoundException;
 	
-	PagedResponseDTO<District> getDistrict(String provinceId, int page, int limit, String sortField, String sortOder) throws Exception;
+	PagedResponseDTO<District> getDistrictsByProvinceId(String provinceId, int page, int limit, String sortField, String sortOder) throws Exception;
 	
 }

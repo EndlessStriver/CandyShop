@@ -43,29 +43,31 @@ public class DistrictServiceImp implements DistrictService{
 
 	@Override
 	@Transactional
-	public District updateDistrict(String provinceId, String districtId, DistrictRequestDTO districtRequestDTO) throws Exception, ResourceNotFoundException {
-		District district = districtRepository.findByDistrictIdAndProvinceProvinceId(districtId, provinceId)
+	public District updateDistrict(String districtId, DistrictRequestDTO districtRequestDTO) throws Exception, ResourceNotFoundException {
+		District district = districtRepository.findById(districtId)
                 .orElseThrow(() -> new ResourceNotFoundException("District not found"));
+		if (district.getDistrictName().equals(districtRequestDTO.getDistrictName()))
+			throw new ResourceConflictException("No changes were made to the district name");
         district.setDistrictName(districtRequestDTO.getDistrictName());
         return districtRepository.save(district);
 	}
 
 	@Override
 	@Transactional
-	public void deleteDistrict(String provinceId, String districtId) throws Exception, ResourceNotFoundException {
-		District district = districtRepository.findByDistrictIdAndProvinceProvinceId(districtId, provinceId)
+	public void deleteDistrict(String districtId) throws Exception, ResourceNotFoundException {
+		District district = districtRepository.findById(districtId)
 				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
 		districtRepository.delete(district);
 	}
 
 	@Override
-	public District getDistrict(String provinceId, String districtId) throws Exception, ResourceNotFoundException {
-		return districtRepository.findByDistrictIdAndProvinceProvinceId(districtId, provinceId)
+	public District getDistrict(String districtId) throws Exception, ResourceNotFoundException {
+		return districtRepository.findById(districtId)
 				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
 	}
 
 	@Override
-	public PagedResponseDTO<District> getDistrict(String provinceId, int page, int limit, String sortField, String sortOder)
+	public PagedResponseDTO<District> getDistrictsByProvinceId(String provinceId, int page, int limit, String sortField, String sortOder)
 			throws Exception {
 		Sort sort = sortOder.equalsIgnoreCase("desc") ? Sort.by(sortField).descending()
 				: Sort.by(sortField).ascending();

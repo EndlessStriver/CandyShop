@@ -7,5 +7,7 @@ import com.example.demo.model.Ward;
 
 @Repository
 public interface WardRepository extends JpaRepository<Ward, String>{
-
+	
+	boolean existsByWardName(String wardName);
+	
 }
