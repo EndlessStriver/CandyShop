@@ -5,11 +5,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-
 import com.example.demo.model.enums.Gender;
 import com.example.demo.model.enums.Role;
+import com.example.demo.model.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -85,13 +83,17 @@ public class User {
 	@JsonIgnore
 	private List<Order> orders;
 	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private UserStatus status;
+	
 	@PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.userId = UUID.randomUUID().toString();
         this.role = Role.CUSTOMER;
-        
+        this.status = UserStatus.ACTIVE;
     }
 	
 	@PreUpdate
