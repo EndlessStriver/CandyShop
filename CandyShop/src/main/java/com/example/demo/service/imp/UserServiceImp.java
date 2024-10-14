@@ -1,8 +1,8 @@
 package com.example.demo.service.imp;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,12 +17,16 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.service.S3Service;
 import com.example.demo.service.UserService;
 
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
 @Service
 public class UserServiceImp implements UserService {
 
 	private UserRepository userRepository;
 	private BCryptPasswordEncoder bycryptPasswordEncoder;
 	private S3Service s3Service;
+	@Value("${cloud.aws.s3.bucket}")
+	private String bucketName;
 
 	public UserServiceImp(UserRepository userRepository, BCryptPasswordEncoder bycryptPasswordEncoder,
 			S3Service s3Service) {
@@ -71,11 +75,20 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
-	public User uploadAvatar(String userId, MultipartFile multipartFile) throws IOException {
-		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        String avatarUrl = s3Service.uploadFile(multipartFile);
-        user.setAvatar(avatarUrl);
-        return userRepository.save(user);
+	public User uploadAvatar(String userId, MultipartFile multipartFile) throws Exception {
+		String avatarName = null;
+		try {
+			User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+			if (user.getAvatar() != null && user.getAvatarUrl() != null) s3Service.deleteFile(user.getAvatar());
+	        avatarName = s3Service.uploadFile(multipartFile);
+	        String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1", avatarName);
+	        user.setAvatar(avatarName);
+	        user.setAvatarUrl(avatarUrl);
+	        return userRepository.save(user);
+		} catch (Exception e) {
+			if (avatarName != null) s3Service.deleteFile(avatarName);
+			throw e;
+		}
     }
 
 }

@@ -13,6 +13,7 @@ import com.example.demo.service.S3Service;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -39,8 +40,7 @@ public class S3ServiceImp implements S3Service {
 	private String uploadFileTos3bucket(String fileName, File file) {
 		s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName).build(),
 				RequestBody.fromFile(file));
-		String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1", fileName);
-		return imageUrl;
+		return fileName;
 	}
 
 	private String generateFileName(MultipartFile multiPart) {
@@ -53,5 +53,14 @@ public class S3ServiceImp implements S3Service {
 		fileOutputStream.write(file.getBytes());
 		fileOutputStream.close();
 		return convFile;
+	}
+
+	@Override
+	public void deleteFile(String key) throws Exception {
+		DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+        s3Client.deleteObject(deleteObjectRequest);
 	}
 }

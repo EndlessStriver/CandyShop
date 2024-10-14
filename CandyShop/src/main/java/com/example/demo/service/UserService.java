@@ -17,6 +17,6 @@ public interface UserService {
 	public void changePassword(String userId, ChangePasswordRequestDTO changePasswordRequestDTO)
 			throws Exception, ResourceNotFoundException;
 	
-	public User uploadAvatar(String userId, MultipartFile multipartFile) throws IOException;
+	public User uploadAvatar(String userId, MultipartFile multipartFile) throws IOException, Exception;
 
 }

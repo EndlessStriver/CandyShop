@@ -58,6 +58,9 @@ public class User {
 	@Column(name = "avatar", nullable = true)
 	private String avatar;
 	
+	@Column(name = "avatar_url", nullable = true)
+	private String avatarUrl;
+	
 	@Column(name = "password", nullable = false)
 	@JsonIgnore
 	private String password;

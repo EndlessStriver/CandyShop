@@ -1,7 +1,5 @@
 package com.example.demo.controller;
 
-import java.io.IOException;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -49,7 +47,7 @@ public class UserController {
 
 	@PatchMapping("/{userId}/avatar")
 	public ResponseEntity<?> uploadAvatar(@PathVariable String userId,
-			@RequestPart(value = "file") MultipartFile multipartFile) throws IOException {
+			@RequestPart(value = "file") MultipartFile multipartFile) throws Exception {
 		User user = userService.uploadAvatar(userId, multipartFile);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("Avatar uploaded successfully", HttpStatus.OK.value(),
 				user);
