@@ -53,5 +53,13 @@ public class UserController {
 				user);
 		return ResponseEntity.ok(response);
 	}
+	
+//	@PatchMapping("/{userId}/email")
+//	public ResponseEntity<?> changeEmail(@PathVariable String userId, @RequestBody String email) throws Exception {
+//		userService.changeEmail(userId, email);
+//		ApiResponseDTO<String> response = new ApiResponseDTO<>("Email changed successfully", HttpStatus.OK.value(),
+//				null);
+//		return ResponseEntity.ok(response);
+//	}
 
 }

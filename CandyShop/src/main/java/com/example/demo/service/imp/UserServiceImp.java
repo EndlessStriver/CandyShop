@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.ChangePasswordRequestDTO;
@@ -16,8 +17,6 @@ import com.example.demo.model.enums.Gender;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.S3Service;
 import com.example.demo.service.UserService;
-
-import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class UserServiceImp implements UserService {
@@ -36,6 +35,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public User updateUser(String userId, UserProfileRequestDTO profileRequestDTO)
 			throws Exception, ResourceNotFoundException {
 
@@ -62,6 +62,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public void changePassword(String userId, ChangePasswordRequestDTO changePasswordRequestDTO)
 			throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -75,6 +76,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public User uploadAvatar(String userId, MultipartFile multipartFile) throws Exception {
 		String avatarName = null;
 		try {

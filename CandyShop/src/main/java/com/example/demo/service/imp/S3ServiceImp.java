@@ -27,7 +27,8 @@ public class S3ServiceImp implements S3Service {
 	public S3ServiceImp(S3Client s3Client) {
 		this.s3Client = s3Client;
 	}
-
+	
+	@Override
 	public String uploadFile(MultipartFile multipartFile) throws IOException {
 		String fileUrl = "";
 		File file = convertMultiPartToFile(multipartFile);
