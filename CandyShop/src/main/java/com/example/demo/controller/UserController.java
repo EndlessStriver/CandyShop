@@ -1,12 +1,16 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
@@ -40,6 +44,15 @@ public class UserController {
 		userService.changePassword(userId, changePasswordRequestDTO);
 		ApiResponseDTO<String> response = new ApiResponseDTO<>("Password changed successfully", HttpStatus.OK.value(),
 				null);
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("/{userId}/avatar")
+	public ResponseEntity<?> uploadAvatar(@PathVariable String userId,
+			@RequestPart(value = "file") MultipartFile multipartFile) throws IOException {
+		User user = userService.uploadAvatar(userId, multipartFile);
+		ApiResponseDTO<User> response = new ApiResponseDTO<>("Avatar uploaded successfully", HttpStatus.OK.value(),
+				user);
 		return ResponseEntity.ok(response);
 	}
 

@@ -1,5 +1,9 @@
 package com.example.demo.service;
 
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -12,5 +16,7 @@ public interface UserService {
 
 	public void changePassword(String userId, ChangePasswordRequestDTO changePasswordRequestDTO)
 			throws Exception, ResourceNotFoundException;
+	
+	public User uploadAvatar(String userId, MultipartFile multipartFile) throws IOException;
 
 }

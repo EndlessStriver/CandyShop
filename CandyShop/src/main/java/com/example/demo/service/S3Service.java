@@ -1,5 +1,11 @@
 package com.example.demo.service;
 
-public interface S3Service {
+import java.io.IOException;
 
+import org.springframework.web.multipart.MultipartFile;
+
+public interface S3Service {
+	
+	public String uploadFile(MultipartFile multipartFile) throws IOException;
+	
 }
