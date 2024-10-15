@@ -32,6 +32,12 @@ public class Address {
 	@Column(name = "address", nullable = false)
 	private String address;
 	
+	@Column(name = "customer_name", nullable = false)
+	private String customerName;
+	
+	@Column(name = "phone_number", nullable = false)
+	private String phoneNumber;
+	
 	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "province_id")
 	private Province province;

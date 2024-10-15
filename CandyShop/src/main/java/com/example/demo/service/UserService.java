@@ -9,6 +9,7 @@ import com.example.demo.dto.AddressRequestDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
+import com.example.demo.dto.VerifyUserRequest;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Address;
 import com.example.demo.model.User;
@@ -34,5 +35,7 @@ public interface UserService {
 	public Address getAddress(String userId, String addressId) throws Exception, ResourceNotFoundException;
 	
 	public List<Address> getAddresses(String userId) throws Exception, ResourceNotFoundException;
+	
+	public User verifyUser(String userId, VerifyUserRequest verifyUserRequest) throws Exception;
 
 }

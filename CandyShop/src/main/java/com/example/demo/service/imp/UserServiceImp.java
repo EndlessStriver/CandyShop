@@ -13,6 +13,8 @@ import com.example.demo.dto.AddressRequestDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
+import com.example.demo.dto.VerifyUserRequest;
+import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.Address;
@@ -21,6 +23,7 @@ import com.example.demo.model.Province;
 import com.example.demo.model.User;
 import com.example.demo.model.Ward;
 import com.example.demo.model.enums.Gender;
+import com.example.demo.model.enums.UserStatus;
 import com.example.demo.repository.AddressRepository;
 import com.example.demo.repository.DistrictRepository;
 import com.example.demo.repository.ProvinceRepository;
@@ -44,17 +47,17 @@ public class UserServiceImp implements UserService {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
 
-	public UserServiceImp(UserRepository userRepository, BCryptPasswordEncoder bycryptPasswordEncoder, S3Service s3Service,
-            RedisService redisService, ProvinceRepository provinceRepository, DistrictRepository districtRepository,
-            WardRepository wardRepository, AddressRepository addressRepository) {
-        this.userRepository = userRepository;
-        this.bycryptPasswordEncoder = bycryptPasswordEncoder;
-        this.s3Service = s3Service;
-        this.redisService = redisService;
-        this.provinceRepository = provinceRepository;
-        this.districtRepository = districtRepository;
-        this.wardRepository = wardRepository;
-        this.addressRepository = addressRepository;
+	public UserServiceImp(UserRepository userRepository, BCryptPasswordEncoder bycryptPasswordEncoder,
+			S3Service s3Service, RedisService redisService, ProvinceRepository provinceRepository,
+			DistrictRepository districtRepository, WardRepository wardRepository, AddressRepository addressRepository) {
+		this.userRepository = userRepository;
+		this.bycryptPasswordEncoder = bycryptPasswordEncoder;
+		this.s3Service = s3Service;
+		this.redisService = redisService;
+		this.provinceRepository = provinceRepository;
+		this.districtRepository = districtRepository;
+		this.wardRepository = wardRepository;
+		this.addressRepository = addressRepository;
 	}
 
 	@Override
@@ -63,6 +66,14 @@ public class UserServiceImp implements UserService {
 			throws Exception, ResourceNotFoundException {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		
+		if (profileRequestDTO.getFirstName() == null && profileRequestDTO.getLastName() == null
+				&& profileRequestDTO.getPhoneNumber() == null && profileRequestDTO.getGender() == null
+				&& profileRequestDTO.getBirthDay() == null)
+			throw new Exception("No data to update");
+		
+		if (userRepository.existsByPhoneNumber(profileRequestDTO.getPhoneNumber()))
+            throw new ResourceConflictException("Phone number already");
 
 		String firstName = profileRequestDTO.getFirstName();
 		String lastName = profileRequestDTO.getLastName();
@@ -103,29 +114,37 @@ public class UserServiceImp implements UserService {
 	public User uploadAvatar(String userId, MultipartFile multipartFile) throws Exception {
 		String avatarName = null;
 		try {
-			User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-			if (user.getAvatar() != null && user.getAvatarUrl() != null) s3Service.deleteFile(user.getAvatar());
-	        avatarName = s3Service.uploadFile(multipartFile);
-	        String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1", avatarName);
-	        user.setAvatar(avatarName);
-	        user.setAvatarUrl(avatarUrl);
-	        return userRepository.save(user);
+			User user = userRepository.findById(userId)
+					.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+			if (user.getAvatar() != null && user.getAvatarUrl() != null)
+				s3Service.deleteFile(user.getAvatar());
+			avatarName = s3Service.uploadFile(multipartFile);
+			String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1",
+					avatarName);
+			user.setAvatar(avatarName);
+			user.setAvatarUrl(avatarUrl);
+			return userRepository.save(user);
 		} catch (Exception e) {
-			if (avatarName != null) s3Service.deleteFile(avatarName);
+			if (avatarName != null)
+				s3Service.deleteFile(avatarName);
 			throw e;
 		}
-    }
+	}
 
 	@Override
 	@Transactional
 	public User changeEmail(String userId, ChangeEmailRequestDTO changeEmailRequestDTO)
 			throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		if (userRepository.existsByEmail(changeEmailRequestDTO.getNewEmail()))
+			throw new ResourceConflictException("Email already exists");
 		if (!bycryptPasswordEncoder.matches(changeEmailRequestDTO.getPassword(), user.getPassword()))
 			throw new UnauthorizedException("Password is incorrect");
 		Object otp = redisService.get(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
-		if (otp == null) throw new UnauthorizedException("OTP is incorrect or expired");
-		if (!otp.equals(changeEmailRequestDTO.getOtp())) throw new UnauthorizedException("OTP is incorrect or expired");
+		if (otp == null)
+			throw new UnauthorizedException("OTP is incorrect or expired");
+		if (!otp.equals(changeEmailRequestDTO.getOtp()))
+			throw new UnauthorizedException("OTP is incorrect or expired");
 		redisService.delete(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
 		user.setEmail(changeEmailRequestDTO.getNewEmail());
 		return userRepository.save(user);
@@ -134,11 +153,16 @@ public class UserServiceImp implements UserService {
 	@Override
 	public Address createAddress(String userId, AddressRequestDTO address) throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-		Province province = provinceRepository.findById(address.getProvinceId()).orElseThrow(() -> new ResourceNotFoundException("Province not found"));
-		District district = districtRepository.findById(address.getDistrictId()).orElseThrow(() -> new ResourceNotFoundException("District not found"));
-		Ward ward = wardRepository.findById(address.getWardId()).orElseThrow(() -> new ResourceNotFoundException("Ward not found"));	
+		Province province = provinceRepository.findById(address.getProvinceId())
+				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+		District district = districtRepository.findById(address.getDistrictId())
+				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
+		Ward ward = wardRepository.findById(address.getWardId())
+				.orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
 		Address newAddress = new Address();
 		newAddress.setAddress(address.getAddress());
+		newAddress.setCustomerName(address.getCustomerName());
+		newAddress.setPhoneNumber(address.getPhoneNumber());
 		newAddress.setProvince(province);
 		newAddress.setDistrict(district);
 		newAddress.setWard(ward);
@@ -150,38 +174,65 @@ public class UserServiceImp implements UserService {
 	public Address updateAddress(String userId, String addressId, AddressRequestDTO address)
 			throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-		Province province = provinceRepository.findById(address.getProvinceId()).orElseThrow(() -> new ResourceNotFoundException("Province not found"));
-		District district = districtRepository.findById(address.getDistrictId()).orElseThrow(() -> new ResourceNotFoundException("District not found"));
-		Ward ward = wardRepository.findById(address.getWardId()).orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
-		Address oldAddress = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
-	    if (!oldAddress.getUser().getUserId().equals(user.getUserId())) throw new UnauthorizedException("Unauthorized");
-	    oldAddress.setAddress(address.getAddress());
-	    oldAddress.setProvince(province);
-	    oldAddress.setDistrict(district);
-	    oldAddress.setWard(ward);
-	    return addressRepository.save(oldAddress);
+		Province province = provinceRepository.findById(address.getProvinceId())
+				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+		District district = districtRepository.findById(address.getDistrictId())
+				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
+		Ward ward = wardRepository.findById(address.getWardId())
+				.orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
+		Address oldAddress = addressRepository.findById(addressId)
+				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+		if (!oldAddress.getUser().getUserId().equals(user.getUserId()))
+			throw new UnauthorizedException("Unauthorized");
+		oldAddress.setAddress(address.getAddress());
+		oldAddress.setCustomerName(address.getCustomerName());
+		oldAddress.setPhoneNumber(address.getPhoneNumber());
+		oldAddress.setProvince(province);
+		oldAddress.setDistrict(district);
+		oldAddress.setWard(ward);
+		return addressRepository.save(oldAddress);
 	}
 
 	@Override
 	public void deleteAddress(String userId, String addressId) throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
-        if (!address.getUser().getUserId().equals(user.getUserId())) throw new UnauthorizedException("Unauthorized");
-        addressRepository.delete(address);
+		Address address = addressRepository.findById(addressId)
+				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+		if (!address.getUser().getUserId().equals(user.getUserId()))
+			throw new UnauthorizedException("Unauthorized");
+		addressRepository.delete(address);
 	}
 
 	@Override
 	public Address getAddress(String userId, String addressId) throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
-        if (!address.getUser().getUserId().equals(user.getUserId())) throw new UnauthorizedException("Unauthorized");
-        return address;
+		Address address = addressRepository.findById(addressId)
+				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+		if (!address.getUser().getUserId().equals(user.getUserId()))
+			throw new UnauthorizedException("Unauthorized");
+		return address;
 	}
 
 	@Override
 	public List<Address> getAddresses(String userId) throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		return user.getAddresses();
+	}
+
+	@Override
+	public User verifyUser(String userId, VerifyUserRequest verifyUserRequest) throws Exception {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		String email = user.getEmail();
+		Object savedOTP = redisService.get(String.format("otp?email=%s", email));
+		if (savedOTP == null || !savedOTP.equals(verifyUserRequest.getOtp()))
+			throw new UnauthorizedException("OTP is invalid or expired");
+		if (user.getStatus().equals(UserStatus.INACTIVE)) {
+			user.setStatus(UserStatus.ACTIVE);
+		} else {
+			throw new UnauthorizedException("User is already verified");
+		}
+		redisService.delete(String.format("otp?email=%s", email));
+		return userRepository.save(user);
 	}
 
 }

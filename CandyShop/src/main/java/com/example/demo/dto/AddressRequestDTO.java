@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AddressRequestDTO {
 	private String address;
+	private String customerName;
+	private String phoneNumber;
 	private String provinceId;
 	private String districtId;
 	private String wardId;

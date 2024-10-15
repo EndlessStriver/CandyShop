@@ -17,8 +17,10 @@ import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.RegisterRequestDTO;
 import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
+import com.example.demo.model.enums.UserStatus;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmailService;
@@ -67,6 +69,12 @@ public class AuthServiceImp implements AuthService {
 
 			if (userRepository.existsByUserName(registerRequestDTO.getUserName()) == true)
 				throw new ResourceConflictException("Username already exists");
+			
+			if (userRepository.existsByEmail(registerRequestDTO.getEmail()) == true)
+				throw new ResourceConflictException("Email already exists");
+			
+			if (userRepository.existsByPhoneNumber(registerRequestDTO.getPhoneNumber()) == true)
+				throw new ResourceConflictException("Phone number already exists");
 
 			User user = new User();
 			user.setUserName(registerRequestDTO.getUserName());
@@ -77,6 +85,10 @@ public class AuthServiceImp implements AuthService {
 			user.setGender(registerRequestDTO.getGender());
 			user.setPassword(bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()));
 			user.setBirthDay(registerRequestDTO.getBirthDay());
+			
+			String otp = generateOTP();
+			redisService.setWithExpireTime(String.format("otp?email=%s", registerRequestDTO.getEmail()), otp, 60, TimeUnit.SECONDS);
+			emailService.sendEmailVerifyOTP(myEmail, registerRequestDTO.getEmail(), otp);
 
 			return userRepository.save(user);
 

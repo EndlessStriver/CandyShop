@@ -20,6 +20,7 @@ import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
+import com.example.demo.dto.VerifyUserRequest;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Address;
 import com.example.demo.model.User;
@@ -110,6 +111,13 @@ public class UserController {
 		List<Address> addresses = userService.getAddresses(userId);
 		ApiResponseDTO<List<Address>> response = new ApiResponseDTO<>("Addresses retrieved successfully",
 				HttpStatus.OK.value(), addresses);
+		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/{userId}/verify")
+	public ResponseEntity<?> verifyUser(@PathVariable String userId, @RequestBody VerifyUserRequest verifyUserRequest) throws Exception {
+		User user = userService.verifyUser(userId, verifyUserRequest);
+		ApiResponseDTO<User> response = new ApiResponseDTO<>("User verified successfully", HttpStatus.OK.value(), user);
 		return ResponseEntity.ok(response);
 	}
 
