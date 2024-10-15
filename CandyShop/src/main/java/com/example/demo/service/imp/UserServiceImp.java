@@ -1,6 +1,7 @@
 package com.example.demo.service.imp;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -8,14 +9,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dto.AddressRequestDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.model.Address;
+import com.example.demo.model.District;
+import com.example.demo.model.Province;
 import com.example.demo.model.User;
+import com.example.demo.model.Ward;
 import com.example.demo.model.enums.Gender;
+import com.example.demo.repository.AddressRepository;
+import com.example.demo.repository.DistrictRepository;
+import com.example.demo.repository.ProvinceRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WardRepository;
 import com.example.demo.service.RedisService;
 import com.example.demo.service.S3Service;
 import com.example.demo.service.UserService;
@@ -27,15 +37,24 @@ public class UserServiceImp implements UserService {
 	private BCryptPasswordEncoder bycryptPasswordEncoder;
 	private S3Service s3Service;
 	private RedisService redisService;
+	private ProvinceRepository provinceRepository;
+	private DistrictRepository districtRepository;
+	private WardRepository wardRepository;
+	private AddressRepository addressRepository;
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
 
-	public UserServiceImp(UserRepository userRepository, BCryptPasswordEncoder bycryptPasswordEncoder,
-			S3Service s3Service, RedisService redisService) {
-		this.userRepository = userRepository;
-		this.bycryptPasswordEncoder = bycryptPasswordEncoder;
-		this.s3Service = s3Service;
-		this.redisService = redisService;
+	public UserServiceImp(UserRepository userRepository, BCryptPasswordEncoder bycryptPasswordEncoder, S3Service s3Service,
+            RedisService redisService, ProvinceRepository provinceRepository, DistrictRepository districtRepository,
+            WardRepository wardRepository, AddressRepository addressRepository) {
+        this.userRepository = userRepository;
+        this.bycryptPasswordEncoder = bycryptPasswordEncoder;
+        this.s3Service = s3Service;
+        this.redisService = redisService;
+        this.provinceRepository = provinceRepository;
+        this.districtRepository = districtRepository;
+        this.wardRepository = wardRepository;
+        this.addressRepository = addressRepository;
 	}
 
 	@Override
@@ -110,6 +129,59 @@ public class UserServiceImp implements UserService {
 		redisService.delete(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
 		user.setEmail(changeEmailRequestDTO.getNewEmail());
 		return userRepository.save(user);
+	}
+
+	@Override
+	public Address createAddress(String userId, AddressRequestDTO address) throws Exception, ResourceNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		Province province = provinceRepository.findById(address.getProvinceId()).orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+		District district = districtRepository.findById(address.getDistrictId()).orElseThrow(() -> new ResourceNotFoundException("District not found"));
+		Ward ward = wardRepository.findById(address.getWardId()).orElseThrow(() -> new ResourceNotFoundException("Ward not found"));	
+		Address newAddress = new Address();
+		newAddress.setAddress(address.getAddress());
+		newAddress.setProvince(province);
+		newAddress.setDistrict(district);
+		newAddress.setWard(ward);
+		newAddress.setUser(user);
+		return addressRepository.save(newAddress);
+	}
+
+	@Override
+	public Address updateAddress(String userId, String addressId, AddressRequestDTO address)
+			throws Exception, ResourceNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		Province province = provinceRepository.findById(address.getProvinceId()).orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+		District district = districtRepository.findById(address.getDistrictId()).orElseThrow(() -> new ResourceNotFoundException("District not found"));
+		Ward ward = wardRepository.findById(address.getWardId()).orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
+		Address oldAddress = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+	    if (!oldAddress.getUser().getUserId().equals(user.getUserId())) throw new UnauthorizedException("Unauthorized");
+	    oldAddress.setAddress(address.getAddress());
+	    oldAddress.setProvince(province);
+	    oldAddress.setDistrict(district);
+	    oldAddress.setWard(ward);
+	    return addressRepository.save(oldAddress);
+	}
+
+	@Override
+	public void deleteAddress(String userId, String addressId) throws Exception, ResourceNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+        if (!address.getUser().getUserId().equals(user.getUserId())) throw new UnauthorizedException("Unauthorized");
+        addressRepository.delete(address);
+	}
+
+	@Override
+	public Address getAddress(String userId, String addressId) throws Exception, ResourceNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+        if (!address.getUser().getUserId().equals(user.getUserId())) throw new UnauthorizedException("Unauthorized");
+        return address;
+	}
+
+	@Override
+	public List<Address> getAddresses(String userId) throws Exception, ResourceNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		return user.getAddresses();
 	}
 
 }

@@ -1,13 +1,16 @@
 package com.example.demo.service;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dto.AddressRequestDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.model.Address;
 import com.example.demo.model.User;
 
 public interface UserService {
@@ -21,5 +24,15 @@ public interface UserService {
 	public User uploadAvatar(String userId, MultipartFile multipartFile) throws IOException, Exception;
 	
 	public User changeEmail(String userId, ChangeEmailRequestDTO changeEmailRequestDTO) throws Exception, ResourceNotFoundException;
+	
+	public Address createAddress(String userId, AddressRequestDTO address) throws Exception, ResourceNotFoundException;
+	
+	public Address updateAddress(String userId, String addressId, AddressRequestDTO address) throws Exception, ResourceNotFoundException;
+	
+	public void deleteAddress(String userId, String addressId) throws Exception, ResourceNotFoundException;
+	
+	public Address getAddress(String userId, String addressId) throws Exception, ResourceNotFoundException;
+	
+	public List<Address> getAddresses(String userId) throws Exception, ResourceNotFoundException;
 
 }
