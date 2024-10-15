@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.ApiResponseDTO;
+import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -54,12 +55,12 @@ public class UserController {
 		return ResponseEntity.ok(response);
 	}
 	
-//	@PatchMapping("/{userId}/email")
-//	public ResponseEntity<?> changeEmail(@PathVariable String userId, @RequestBody String email) throws Exception {
-//		userService.changeEmail(userId, email);
-//		ApiResponseDTO<String> response = new ApiResponseDTO<>("Email changed successfully", HttpStatus.OK.value(),
-//				null);
-//		return ResponseEntity.ok(response);
-//	}
+	@PatchMapping("/{userId}/email")
+	public ResponseEntity<?> changeEmail(@PathVariable String userId, @RequestBody ChangeEmailRequestDTO changeEmailRequestDTO) throws Exception {
+		User user = userService.changeEmail(userId, changeEmailRequestDTO);
+		ApiResponseDTO<User> response = new ApiResponseDTO<>("Email changed successfully", HttpStatus.OK.value(),
+				user);
+		return ResponseEntity.ok(response);
+	}
 
 }

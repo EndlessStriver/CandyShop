@@ -1,5 +1,9 @@
 package com.example.demo.service.imp;
 
+import java.security.SecureRandom;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,24 +15,36 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.RegisterRequestDTO;
+import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
+import com.example.demo.service.EmailService;
+import com.example.demo.service.RedisService;
 
 @Service
 public class AuthServiceImp implements AuthService {
+	
+	private static final String DIGITS = "0123456789";
+    private static final int OTP_LENGTH = 6;
 
 	private AuthenticationManager authenticationManager;
 	private UserRepository userRepository;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	private EmailService emailService;
+	private RedisService redisService;
+	@Value("${spring.mail.username}")
+	private String myEmail;
 
 	public AuthServiceImp(AuthenticationManager authenticationManager, UserRepository userRepository,
-			BCryptPasswordEncoder bCryptPasswordEncoder) {
-		this.authenticationManager = authenticationManager;
-		this.userRepository = userRepository;
-		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+            BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, RedisService redisService) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.emailService = emailService;
+        this.redisService = redisService;
 	}
 
 	@Override
@@ -70,5 +86,23 @@ public class AuthServiceImp implements AuthService {
 			throw e;
 		}
 	}
+
+	@Override
+	public void sendOTP(SendOtpRequest email) throws Exception {
+		String otp = generateOTP();
+		redisService.setWithExpireTime(String.format("otp?email=%s", email.getEmail()), otp, 60, TimeUnit.SECONDS);
+		emailService.sendEmailVerifyOTP(myEmail, email.getEmail(), otp);
+	}
+	
+	private String generateOTP() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder otp = new StringBuilder(OTP_LENGTH);
+
+        for (int i = 0; i < OTP_LENGTH; i++) {
+            int index = random.nextInt(DIGITS.length());
+            otp.append(DIGITS.charAt(index));
+        }
+        return otp.toString();
+    }
 
 }

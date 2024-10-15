@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -15,6 +16,7 @@ import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
 import com.example.demo.model.enums.Gender;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.RedisService;
 import com.example.demo.service.S3Service;
 import com.example.demo.service.UserService;
 
@@ -24,14 +26,16 @@ public class UserServiceImp implements UserService {
 	private UserRepository userRepository;
 	private BCryptPasswordEncoder bycryptPasswordEncoder;
 	private S3Service s3Service;
+	private RedisService redisService;
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
 
 	public UserServiceImp(UserRepository userRepository, BCryptPasswordEncoder bycryptPasswordEncoder,
-			S3Service s3Service) {
+			S3Service s3Service, RedisService redisService) {
 		this.userRepository = userRepository;
 		this.bycryptPasswordEncoder = bycryptPasswordEncoder;
 		this.s3Service = s3Service;
+		this.redisService = redisService;
 	}
 
 	@Override
@@ -92,5 +96,20 @@ public class UserServiceImp implements UserService {
 			throw e;
 		}
     }
+
+	@Override
+	@Transactional
+	public User changeEmail(String userId, ChangeEmailRequestDTO changeEmailRequestDTO)
+			throws Exception, ResourceNotFoundException {
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		if (!bycryptPasswordEncoder.matches(changeEmailRequestDTO.getPassword(), user.getPassword()))
+			throw new UnauthorizedException("Password is incorrect");
+		Object otp = redisService.get(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
+		if (otp == null) throw new UnauthorizedException("OTP is incorrect or expired");
+		if (!otp.equals(changeEmailRequestDTO.getOtp())) throw new UnauthorizedException("OTP is incorrect or expired");
+		redisService.delete(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
+		user.setEmail(changeEmailRequestDTO.getNewEmail());
+		return userRepository.save(user);
+	}
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.RegisterRequestDTO;
+import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
@@ -36,5 +37,11 @@ public class AuthController {
         User user = authService.register(registerRequestDTO);
         return ResponseEntity.ok(new ApiResponseDTO<User>("Register Success!", HttpStatus.OK.value(), user));
     }
+	
+	@PostMapping("/otp")
+	public ResponseEntity<?> sendOTP(@RequestBody SendOtpRequest email) throws Exception {
+		authService.sendOTP(email);
+		return ResponseEntity.ok(new ApiResponseDTO<>("OTP sent!", HttpStatus.OK.value(), null));
+	}
 
 }
