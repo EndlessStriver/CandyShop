@@ -43,7 +43,7 @@ public class Product {
 	
 	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "sub_category_id", nullable = false)
-	private SupCategory subCategory;
+	private SubCategory subCategory;
 	
 	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "publisher_id", nullable = false)

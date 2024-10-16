@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.CategoryRequestDTO;
+import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.model.Category;
+import com.example.demo.model.SubCategory;
 import com.example.demo.service.CategoryService;
 
 @RestController
@@ -40,6 +42,14 @@ public class CategoryController {
         Category category = categoryService.getCategory(categoryId);
         ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category retrieved successfully", HttpStatus.OK.value(), category);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@GetMapping("/{categoryId}/subcategories")
+	public ResponseEntity<?> getSubcategoriesByCategoryId(@PathVariable String categoryId) {
+		Category category = categoryService.getCategory(categoryId);
+		List<SubCategory> categories = category.getSubCategories();
+		ApiResponseDTO<List<SubCategory>> response = new ApiResponseDTO<>("SubCategories retrieved successfully", HttpStatus.OK.value(), categories);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@PatchMapping("/{categoryId}")

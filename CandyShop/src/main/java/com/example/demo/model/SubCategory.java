@@ -9,8 +9,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -20,34 +21,39 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "category")
-public class Category {
+@Table(name = "sub_category")
+public class SubCategory {
 	
 	@Id
-	@Column(name = "category_id")
-	private String categoryId;
+	@Column(name = "sub_category_id")
+	private String subCategoryId;
 	
-	@Column(name = "category_name", nullable = false, unique = true)
-	private String categoryName;
+	@Column(name = "sub_category_name", nullable = false, unique = true)
+	private String subCategoryName;
 	
-	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.REFRESH)
+	@JoinColumn(name = "category_id")
 	@JsonIgnore
-	private List<SubCategory> subCategories;
+	private Category category;
 	
-	@Column(name = "created_at", nullable = false)
+	@OneToMany(mappedBy = "subCategory" ,cascade = CascadeType.REFRESH)
+	@JsonIgnore
+	private List<Product> products;
+	
+	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 	
-	@Column(name = "updated_at", nullable = false)
+	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 	
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();
 		this.updatedAt = LocalDateTime.now();
-		this.categoryId = UUID.randomUUID().toString();
+		this.subCategoryId = UUID.randomUUID().toString();
 	}
 	
 	@PreUpdate
