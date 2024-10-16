@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.WardRequestDTO;
@@ -28,6 +29,7 @@ public class WardServiceImp implements WardService {
 	}
 
 	@Override
+	@Transactional
 	public Ward createWard(String districtId, WardRequestDTO wardRequestDTO)
 			throws Exception, ResourceNotFoundException, ResourceConflictException {
 		if (wardRepository.existsByWardName(wardRequestDTO.getWardName()))
@@ -42,6 +44,7 @@ public class WardServiceImp implements WardService {
 	}
 
 	@Override
+	@Transactional
 	public Ward updateWard(String wardId, WardRequestDTO wardRequestDTO)
 			throws Exception, ResourceNotFoundException, ResourceConflictException {
 		Ward ward = wardRepository.findById(wardId).orElseThrow(() -> new ResourceNotFoundException("Not found ward"));
@@ -53,6 +56,7 @@ public class WardServiceImp implements WardService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteWard(String wardId) throws Exception, ResourceNotFoundException {
 		Ward ward = wardRepository.findById(wardId).orElseThrow(() -> new ResourceNotFoundException("Not found ward"));
 		wardRepository.delete(ward);

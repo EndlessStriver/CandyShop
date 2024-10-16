@@ -151,6 +151,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public Address createAddress(String userId, AddressRequestDTO address) throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		Province province = provinceRepository.findById(address.getProvinceId())
@@ -171,6 +172,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public Address updateAddress(String userId, String addressId, AddressRequestDTO address)
 			throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -194,6 +196,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteAddress(String userId, String addressId) throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		Address address = addressRepository.findById(addressId)
@@ -220,6 +223,7 @@ public class UserServiceImp implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public User verifyUser(String userId, VerifyUserRequest verifyUserRequest) throws Exception {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		String email = user.getEmail();
