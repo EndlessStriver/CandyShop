@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -10,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +33,7 @@ public class Product {
 	@Column(name = "product_name", nullable = false)
 	private String productName;
 	
-	@Column(name = "description", nullable = false)
+	@Column(name = "description", nullable = true)
 	private String description;
 	
 	@Column(name = "dimension", nullable = false)
@@ -38,8 +42,11 @@ public class Product {
 	@Column(name = "weight", nullable = false)
 	private double weight;
 	
-	@Column(name = "mainImage", nullable = false)
-	private String mainImage;
+	@Column(name = "mainImageName", nullable = false)
+	private String mainImageName;
+	
+	@Column(name = "mainImageUrl", nullable = false)
+	private String mainImageUrl;
 	
 	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "sub_category_id", nullable = false)
@@ -57,4 +64,22 @@ public class Product {
 	
 	@OneToMany(mappedBy = "product", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
 	private List<OrderDetail> orderDetails;
+	
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
+	
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
+	
+	@PrePersist
+	public void prePersist() {
+		this.createdAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
+		this.productId = UUID.randomUUID().toString();
+	}
+	
+	@PreUpdate
+	public void preUpdate() {
+		this.updatedAt = LocalDateTime.now();
+	}
 }

@@ -32,10 +32,17 @@ public class GlobalExceptionHandler {
 	}
 	
 	@ExceptionHandler(ResourceConflictException.class)
-	public ResponseEntity<ApiResponseDTO<Void>> handleLoginFailedException(ResourceConflictException ex){
+	public ResponseEntity<ApiResponseDTO<Void>> resoureConflicException(ResourceConflictException ex){
 		String errorMessage = ex.getMessage();
 		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.CONFLICT.value(), null);
 		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.CONFLICT);
+	}
+	
+	@ExceptionHandler(BadRequestException.class)
+	public ResponseEntity<ApiResponseDTO<Void>> badRequestException(BadRequestException ex){
+		String errorMessage = ex.getMessage();
+		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.BAD_REQUEST.value(), null);
+		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.BAD_REQUEST);
 	}
 	
 }
