@@ -92,8 +92,8 @@ public class ProductServiceImp implements ProductService {
 
 	@Override
 	@Transactional
-	public Product updateProduct(ProductRequestUpdateDTO productRequestUpdateDTO) {
-		Product product = productRepository.findById(productRequestUpdateDTO.getProductId()).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+	public Product updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO) {
+		Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 		if (productRequestUpdateDTO.getProductName() != null) product.setProductName(productRequestUpdateDTO.getProductName());
 		if (productRequestUpdateDTO.getDescription() != null) product.setDescription(productRequestUpdateDTO.getDescription());
 		if (productRequestUpdateDTO.getDimension() != null) product.setDimension(productRequestUpdateDTO.getDimension());

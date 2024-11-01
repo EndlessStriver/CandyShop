@@ -15,7 +15,7 @@ public interface ProductService {
 
 	public Product getProduct(String id);
 
-	public Product updateProduct(ProductRequestUpdateDTO productRequestUpdateDTO);
+	public Product updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO);
 
 	public void deleteProduct(String id);
 
