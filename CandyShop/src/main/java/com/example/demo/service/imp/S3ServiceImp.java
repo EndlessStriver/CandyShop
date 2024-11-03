@@ -15,6 +15,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class S3ServiceImp implements S3Service {
@@ -58,10 +59,14 @@ public class S3ServiceImp implements S3Service {
 
 	@Override
 	public void deleteFile(String key) throws Exception {
-		DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build();
-        s3Client.deleteObject(deleteObjectRequest);
+		try {
+			DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+	                .bucket(bucketName)
+	                .key(key)
+	                .build();
+	        s3Client.deleteObject(deleteObjectRequest);
+		} catch (S3Exception e) {
+			throw new Exception(e.getMessage());
+		}
 	}
 }

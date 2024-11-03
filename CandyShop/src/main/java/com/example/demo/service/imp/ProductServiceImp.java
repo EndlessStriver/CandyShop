@@ -118,9 +118,14 @@ public class ProductServiceImp implements ProductService {
 
 	@Override
 	@Transactional
-	public void deleteProduct(String id) {
-		Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-		productRepository.delete(product);
+	public void deleteProduct(String id) throws Exception {
+		try {
+			Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+			s3Service.deleteFile(product.getMainImageName());
+			productRepository.delete(product);
+		} catch (Exception e) {
+			throw e;
+		}
 	}
 
 	@Override

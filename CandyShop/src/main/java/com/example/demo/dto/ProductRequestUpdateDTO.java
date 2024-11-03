@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductRequestUpdateDTO {
-	private String productId;
 	private String productName;
 	private String description;
 	private String dimension;

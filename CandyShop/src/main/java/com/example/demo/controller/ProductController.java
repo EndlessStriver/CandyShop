@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,8 +58,8 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
 	}
 
-	@DeleteMapping
-	public ResponseEntity<?> deleteProduct(String id) {
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> deleteProduct(@PathVariable String id) throws Exception {
 		productService.deleteProduct(id);
 		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Delete product success", HttpStatus.OK.value(),
 				null);
@@ -74,7 +75,7 @@ public class ProductController {
 	}
 	
 	@PatchMapping("/{id}/main-image")
-	public ResponseEntity<?> updateProductMainImage(@PathVariable String id, MultipartFile mainImage)
+	public ResponseEntity<?> updateProductMainImage(@PathVariable String id, @RequestPart(value = "file") MultipartFile mainImage)
 			throws IOException, Exception {
 		Product product = productService.updateProductMainImage(id, mainImage);
 		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Update product main image success",

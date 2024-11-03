@@ -17,7 +17,7 @@ public interface ProductService {
 
 	public Product updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO);
 
-	public void deleteProduct(String id);
+	public void deleteProduct(String id) throws Exception;
 
 	public PagedResponseDTO<Product> getProducts(int page, int limit, String sortField, String sortOrder);
 	
