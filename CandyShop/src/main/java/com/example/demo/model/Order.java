@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,7 +76,7 @@ public class Order {
 	
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonIgnore
-	private List<OrderDetail> orderDetails;
+	private List<OrderDetail> orderDetails = new ArrayList<>();
 	
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;

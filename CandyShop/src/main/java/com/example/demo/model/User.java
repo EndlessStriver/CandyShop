@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,11 +81,11 @@ public class User {
 	
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonIgnore
-	private List<Address> addresses;
+	private List<Address> addresses = new ArrayList<Address>();
 	
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonIgnore
-	private List<Order> orders;
+	private List<Order> orders = new ArrayList<Order>();
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)

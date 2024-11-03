@@ -52,37 +52,44 @@ public class ProductServiceImp implements ProductService {
 	@Override
 	@Transactional
 	public Product createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception {
-		Product product = new Product();
-		product.setProductName(productRequestDTO.getProductName());
-		product.setDescription(productRequestDTO.getDescription());
-		product.setDimension(productRequestDTO.getDimension());
-		product.setWeight(productRequestDTO.getWeight());
-		
-		String subCategoryId = productRequestDTO.getSubCategoryId();
-		SubCategory subCategory = subCategoryService.getSubCategory(subCategoryId);
-		
-		String publisherId = productRequestDTO.getPublisherId();
-		Publisher publisher = publisherService.getPublisher(publisherId);
-		
-		product.setSubCategory(subCategory);
-		product.setPublisher(publisher);
-		
-		double price = productRequestDTO.getPrice();
-		PriceHistory priceHistory = new PriceHistory();
-		priceHistory.setNewPrice(price);
-		priceHistory.setPriceChangeReason("Initial price set up for new product");
-		priceHistory.setPriceChangeEffectiveDate(LocalDateTime.now());
-		
-		product.getPriceHistories().add(priceHistory);
-		
-		MultipartFile mainImage = productRequestDTO.getMainImage();
-		String avatarName = s3Service.uploadFile(mainImage);
-		String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1",
-				avatarName);
-		product.setMainImageName(avatarName);
-		product.setMainImageUrl(avatarUrl);
-		
-		return productRepository.save(product);
+		String avatarName = null;
+		try {
+			Product product = new Product();
+			product.setProductName(productRequestDTO.getProductName());
+			product.setDescription(productRequestDTO.getDescription());
+			product.setDimension(productRequestDTO.getDimension());
+			product.setWeight(productRequestDTO.getWeight());
+			
+			String subCategoryId = productRequestDTO.getSubCategoryId();
+			SubCategory subCategory = subCategoryService.getSubCategory(subCategoryId);
+			
+			String publisherId = productRequestDTO.getPublisherId();
+			Publisher publisher = publisherService.getPublisher(publisherId);
+			
+			product.setSubCategory(subCategory);
+			product.setPublisher(publisher);
+			
+			double price = productRequestDTO.getPrice();
+			PriceHistory priceHistory = new PriceHistory();
+			priceHistory.setNewPrice(price);
+			priceHistory.setPriceChangeReason("Initial price set up for new product");
+			priceHistory.setPriceChangeEffectiveDate(LocalDateTime.now());
+			priceHistory.setProduct(product);
+			
+			product.getPriceHistories().add(priceHistory);
+			
+			MultipartFile mainImage = productRequestDTO.getMainImage();
+			avatarName = s3Service.uploadFile(mainImage);
+			String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1",
+					avatarName);
+			product.setMainImageName(avatarName);
+			product.setMainImageUrl(avatarUrl);
+			return productRepository.save(product);
+		} catch (Exception e) {
+			if (avatarName != null)
+				s3Service.deleteFile(avatarName);
+			throw e;
+		}
 	}
 
 	@Override

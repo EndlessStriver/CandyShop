@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public class PriceHistory {
 	private Product product;
 	
 	@OneToMany(mappedBy = "priceHistory", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-	private List<OrderDetail> orderDetails;
+	private List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
 	
 	@PrePersist
 	public void prePersist() {

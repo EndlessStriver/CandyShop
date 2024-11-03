@@ -22,7 +22,7 @@ import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/api/products")
 public class ProductController {
 
 	private ProductService productService;

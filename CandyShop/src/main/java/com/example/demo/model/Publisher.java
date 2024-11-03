@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +45,7 @@ public class Publisher {
 	
 	@OneToMany(mappedBy = "publisher", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JsonIgnore
-	private List<Product> products;
+	private List<Product> products = new ArrayList<Product>();
 	
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;

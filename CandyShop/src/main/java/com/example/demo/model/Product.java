@@ -1,8 +1,11 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -42,10 +45,10 @@ public class Product {
 	@Column(name = "weight", nullable = false)
 	private double weight;
 	
-	@Column(name = "mainImageName", nullable = false)
+	@Column(name = "main_image_name", nullable = false)
 	private String mainImageName;
 	
-	@Column(name = "mainImageUrl", nullable = false)
+	@Column(name = "main_image_url", nullable = false)
 	private String mainImageUrl;
 	
 	@ManyToOne(cascade = CascadeType.REFRESH)
@@ -57,13 +60,15 @@ public class Product {
 	private Publisher publisher;
 	
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<Image> images;
+	private List<Image> images = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<PriceHistory> priceHistories;
+	@JsonIgnore
+	private List<PriceHistory> priceHistories = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "product", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-	private List<OrderDetail> orderDetails;
+	@JsonIgnore
+	private List<OrderDetail> orderDetails = new ArrayList<>();
 	
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;

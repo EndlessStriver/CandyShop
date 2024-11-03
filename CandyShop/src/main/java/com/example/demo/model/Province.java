@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,15 +43,15 @@ public class Province {
 	
 	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JsonIgnore
-	private List<Address> addresses;
+	private List<Address> addresses = new ArrayList<Address>();
 	
 	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
 	@JsonIgnore
-	private List<Order> orders;
+	private List<Order> orders = new ArrayList<Order>();
 	
 	@OneToMany(mappedBy = "province", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonIgnore
-	private List<District> districts;
+	private List<District> districts = new ArrayList<District>();
 	
 	@PrePersist
     public void prePersist() {
