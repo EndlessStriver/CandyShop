@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.PagedResponseDTO;
+import com.example.demo.dto.PriceHistoryRequestDTO;
 import com.example.demo.dto.ProductRequestDTO;
 import com.example.demo.dto.ProductRequestUpdateDTO;
 import com.example.demo.exception.BadRequestException;
@@ -24,6 +25,7 @@ import com.example.demo.model.Product;
 import com.example.demo.model.Publisher;
 import com.example.demo.model.SubCategory;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.service.PriceHistoryService;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.PublisherService;
 import com.example.demo.service.S3Service;
@@ -48,7 +50,7 @@ public class ProductServiceImp implements ProductService {
 		this.publisherService = publisherService;
 		this.s3Service = s3Service;
 	}
-	
+
 	@Override
 	@Transactional
 	public Product createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception {
@@ -59,25 +61,25 @@ public class ProductServiceImp implements ProductService {
 			product.setDescription(productRequestDTO.getDescription());
 			product.setDimension(productRequestDTO.getDimension());
 			product.setWeight(productRequestDTO.getWeight());
-			
+
 			String subCategoryId = productRequestDTO.getSubCategoryId();
 			SubCategory subCategory = subCategoryService.getSubCategory(subCategoryId);
-			
+
 			String publisherId = productRequestDTO.getPublisherId();
 			Publisher publisher = publisherService.getPublisher(publisherId);
-			
+
 			product.setSubCategory(subCategory);
 			product.setPublisher(publisher);
-			
+
 			double price = productRequestDTO.getPrice();
 			PriceHistory priceHistory = new PriceHistory();
 			priceHistory.setNewPrice(price);
 			priceHistory.setPriceChangeReason("Initial price set up for new product");
 			priceHistory.setPriceChangeEffectiveDate(LocalDateTime.now());
 			priceHistory.setProduct(product);
-			
+
 			product.getPriceHistories().add(priceHistory);
-			
+
 			MultipartFile mainImage = productRequestDTO.getMainImage();
 			avatarName = s3Service.uploadFile(mainImage);
 			String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1",
@@ -100,11 +102,16 @@ public class ProductServiceImp implements ProductService {
 	@Override
 	@Transactional
 	public Product updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO) {
-		Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-		if (productRequestUpdateDTO.getProductName() != null) product.setProductName(productRequestUpdateDTO.getProductName());
-		if (productRequestUpdateDTO.getDescription() != null) product.setDescription(productRequestUpdateDTO.getDescription());
-		if (productRequestUpdateDTO.getDimension() != null) product.setDimension(productRequestUpdateDTO.getDimension());
-		if (productRequestUpdateDTO.getWeight() != 0) product.setWeight(productRequestUpdateDTO.getWeight());
+		Product product = productRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+		if (productRequestUpdateDTO.getProductName() != null)
+			product.setProductName(productRequestUpdateDTO.getProductName());
+		if (productRequestUpdateDTO.getDescription() != null)
+			product.setDescription(productRequestUpdateDTO.getDescription());
+		if (productRequestUpdateDTO.getDimension() != null)
+			product.setDimension(productRequestUpdateDTO.getDimension());
+		if (productRequestUpdateDTO.getWeight() != 0)
+			product.setWeight(productRequestUpdateDTO.getWeight());
 		if (productRequestUpdateDTO.getSubCategoryId() != null) {
 			SubCategory subCategory = subCategoryService.getSubCategory(productRequestUpdateDTO.getSubCategoryId());
 			product.setSubCategory(subCategory);
@@ -120,7 +127,8 @@ public class ProductServiceImp implements ProductService {
 	@Transactional
 	public void deleteProduct(String id) throws Exception {
 		try {
-			Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+			Product product = productRepository.findById(id)
+					.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 			s3Service.deleteFile(product.getMainImageName());
 			for (Image image : product.getImages()) {
 				s3Service.deleteFile(image.getImageTitle());
@@ -133,7 +141,8 @@ public class ProductServiceImp implements ProductService {
 
 	@Override
 	public PagedResponseDTO<Product> getProducts(int page, int limit, String sortField, String sortOrder) {
-		Sort sort = sortOrder.equalsIgnoreCase("desc") ? Sort.by(sortField).descending() : Sort.by(sortField).ascending();
+		Sort sort = sortOrder.equalsIgnoreCase("desc") ? Sort.by(sortField).descending()
+				: Sort.by(sortField).ascending();
 		Pageable pageable = PageRequest.of(page, limit, sort);
 		Page<Product> pageProduct = productRepository.findAll(pageable);
 		PagedResponseDTO<Product> pagedResponseDTO = new PagedResponseDTO<>();
@@ -153,12 +162,14 @@ public class ProductServiceImp implements ProductService {
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 		try {
 			avatarName = s3Service.uploadFile(mainImage);
-			String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1", avatarName);
+			String avatarUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, "ap-southeast-1",
+					avatarName);
 			s3Service.deleteFile(product.getMainImageName());
 			product.setMainImageName(avatarName);
 			product.setMainImageUrl(avatarUrl);
 		} catch (Exception e) {
-			if (avatarName != null) s3Service.deleteFile(avatarName);
+			if (avatarName != null)
+				s3Service.deleteFile(avatarName);
 			throw e;
 		}
 		return productRepository.save(product);
@@ -169,8 +180,9 @@ public class ProductServiceImp implements ProductService {
 	public Product updateProductImages(String id, MultipartFile[] images) throws IOException, Exception {
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-		if (product.getImages().size() + images.length > 5) throw new BadRequestException("Maximum 5 images are allowed");
-		
+		if (product.getImages().size() + images.length > 5)
+			throw new BadRequestException("Maximum 5 images are allowed");
+
 		List<Image> imageList = new ArrayList<Image>();
 		try {
 			for (MultipartFile image : images) {
@@ -193,5 +205,4 @@ public class ProductServiceImp implements ProductService {
 		}
 		return product;
 	}
-
 }

@@ -5,8 +5,10 @@ import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.PagedResponseDTO;
+import com.example.demo.dto.PriceHistoryRequestDTO;
 import com.example.demo.dto.ProductRequestDTO;
 import com.example.demo.dto.ProductRequestUpdateDTO;
+import com.example.demo.model.PriceHistory;
 import com.example.demo.model.Product;
 
 public interface ProductService {
