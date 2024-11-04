@@ -49,7 +49,6 @@ public class PublisherController {
 	}
 
 	@PostMapping
-	@Transactional
 	public ResponseEntity<?> createPublisher(@RequestBody PublisherRequestDTO publisherRequestDTO) {
 		Publisher publisher = publisherService.createPublisher(publisherRequestDTO);
 		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher created successfully",
@@ -58,7 +57,6 @@ public class PublisherController {
 	}
 
 	@PatchMapping("/{publisherId}")
-	@Transactional
 	public ResponseEntity<?> updatePublisher(@PathVariable String publisherId,
 			@RequestBody PublisherRequestDTO publisherRequestDTO) {
 		Publisher publisher = publisherService.updatePublisher(publisherId, publisherRequestDTO);
@@ -68,7 +66,6 @@ public class PublisherController {
 	}
 
 	@DeleteMapping("/{publisherId}")
-	@Transactional
 	public ResponseEntity<?> deletePublisher(@PathVariable String publisherId) {
 		publisherService.deletePublisher(publisherId);
 		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher deleted successfully",

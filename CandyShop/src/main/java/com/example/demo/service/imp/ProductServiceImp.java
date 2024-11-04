@@ -122,6 +122,9 @@ public class ProductServiceImp implements ProductService {
 		try {
 			Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 			s3Service.deleteFile(product.getMainImageName());
+			for (Image image : product.getImages()) {
+				s3Service.deleteFile(image.getImageTitle());
+			}
 			productRepository.delete(product);
 		} catch (Exception e) {
 			throw e;
@@ -177,6 +180,7 @@ public class ProductServiceImp implements ProductService {
 				Image imageObj = new Image();
 				imageObj.setImageTitle(imageName);
 				imageObj.setUrl(imageUrl);
+				imageObj.setProduct(product);
 				imageList.add(imageObj);
 			}
 			product.getImages().addAll(imageList);

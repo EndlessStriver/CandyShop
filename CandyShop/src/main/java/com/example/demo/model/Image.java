@@ -1,5 +1,8 @@
 package com.example.demo.model;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -8,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,4 +39,22 @@ public class Image {
 	@JoinColumn(name = "product_id", nullable = false)
 	@JsonIgnore
 	private Product product;
+	
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
+	
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
+	
+	@PrePersist
+	public void prePersist() {
+		this.createdAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
+		this.imageId = UUID.randomUUID().toString();
+	}
+	
+	@PreUpdate
+	public void preUpdate() {
+		this.updatedAt = LocalDateTime.now();
+	}
 }

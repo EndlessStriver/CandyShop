@@ -45,6 +45,7 @@ public class CategoryServiceImp implements CategoryService{
 	}
 
 	@Override
+	@Transactional
 	public void deleteCategory(String categoryId) {
 		Category category = categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));

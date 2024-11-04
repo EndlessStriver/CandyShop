@@ -84,7 +84,7 @@ public class ProductController {
 	}
 	
 	@PatchMapping("/{id}/images")
-	public ResponseEntity<?> updateProductImages(@PathVariable String id, MultipartFile[] images)
+	public ResponseEntity<?> updateProductImages(@PathVariable String id, @RequestPart(value = "files") MultipartFile[] images)
 			throws IOException, Exception {
 		Product product = productService.updateProductImages(id, images);
 		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Update product images success",
