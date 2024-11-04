@@ -37,7 +37,7 @@ public class PriceHistory {
 	@Column(name = "price_change_reason", nullable = true)
 	private String priceChangeReason;
 	
-	@Column(name = "price_change_effective_date", nullable = false)
+	@Column(name = "price_change_effective_date", nullable = false, unique = true)
 	private LocalDateTime priceChangeEffectiveDate;
 	
 	@Column(name = "created_date", nullable = false)
