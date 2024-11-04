@@ -21,9 +21,9 @@ import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.PriceHistoryRequestDTO;
 import com.example.demo.dto.ProductRequestDTO;
 import com.example.demo.dto.ProductRequestUpdateDTO;
+import com.example.demo.dto.ProductResponseDTO;
 import com.example.demo.model.PriceHistory;
 import com.example.demo.model.Product;
-import com.example.demo.service.PriceHistoryService;
 import com.example.demo.service.ProductService;
 
 @RestController
@@ -31,18 +31,16 @@ import com.example.demo.service.ProductService;
 public class ProductController {
 
 	private ProductService productService;
-	private PriceHistoryService priceHistoryService;
 
-	public ProductController(ProductService productService, PriceHistoryService priceHistoryService) {
+	public ProductController(ProductService productService) {
 		this.productService = productService;
-		this.priceHistoryService = priceHistoryService;
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getProductById(@PathVariable String id) {
-		Product product = productService.getProduct(id);
-		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Get product success", HttpStatus.OK.value(),
-				product);
+		ProductResponseDTO product = productService.getProduct(id);
+		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Get product success",
+				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
@@ -50,16 +48,17 @@ public class ProductController {
 	public ResponseEntity<?> getAllProduct(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "productName") String sortField,
 			@RequestParam(defaultValue = "asc") String sortOder) {
-		PagedResponseDTO<Product> pagedResponseDTO = productService.getProducts(page, limit, sortField, sortOder);
-		ApiResponseDTO<PagedResponseDTO<Product>> apiResponseDTO = new ApiResponseDTO<>("Get all product success",
-				HttpStatus.OK.value(), pagedResponseDTO);
+		PagedResponseDTO<ProductResponseDTO> pagedResponseDTO = productService.getProducts(page, limit, sortField,
+				sortOder);
+		ApiResponseDTO<PagedResponseDTO<ProductResponseDTO>> apiResponseDTO = new ApiResponseDTO<>(
+				"Get all product success", HttpStatus.OK.value(), pagedResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
 	@PostMapping
 	public ResponseEntity<?> createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception {
-		Product product = productService.createProduct(productRequestDTO);
-		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Create product success",
+		ProductResponseDTO product = productService.createProduct(productRequestDTO);
+		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Create product success",
 				HttpStatus.CREATED.value(), product);
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
 	}
@@ -74,17 +73,17 @@ public class ProductController {
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<?> updateProduct(@PathVariable String id, ProductRequestUpdateDTO productRequestUpdateDTO) {
-		Product product = productService.updateProduct(id, productRequestUpdateDTO);
-		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Update product success", HttpStatus.OK.value(),
-				product);
+		ProductResponseDTO product = productService.updateProduct(id, productRequestUpdateDTO);
+		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product success",
+				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
 	@PatchMapping("/{id}/main-image")
 	public ResponseEntity<?> updateProductMainImage(@PathVariable String id,
 			@RequestPart(value = "file") MultipartFile mainImage) throws IOException, Exception {
-		Product product = productService.updateProductMainImage(id, mainImage);
-		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Update product main image success",
+		ProductResponseDTO product = productService.updateProductMainImage(id, mainImage);
+		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product main image success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
@@ -92,8 +91,8 @@ public class ProductController {
 	@PatchMapping("/{id}/images")
 	public ResponseEntity<?> updateProductImages(@PathVariable String id,
 			@RequestPart(value = "files") MultipartFile[] images) throws IOException, Exception {
-		Product product = productService.updateProductImages(id, images);
-		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Update product images success",
+		ProductResponseDTO product = productService.updateProductImages(id, images);
+		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product images success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
@@ -101,7 +100,7 @@ public class ProductController {
 	@PostMapping("/{id}/price-histories")
 	public ResponseEntity<?> createPriceHistory(@PathVariable String id,
 			@RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO) {
-		PriceHistory priceHistory = priceHistoryService.createPriceHistory(id, priceHistoryRequestDTO);
+		PriceHistory priceHistory = productService.createPriceHistory(id, priceHistoryRequestDTO);
 		ApiResponseDTO<PriceHistory> apiResponseDTO = new ApiResponseDTO<>("Add price history success",
 				HttpStatus.CREATED.value(), priceHistory);
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
@@ -112,8 +111,8 @@ public class ProductController {
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit,
 			@RequestParam(defaultValue = "priceChangeEffectiveDate") String sortField,
 			@RequestParam(defaultValue = "desc") String sortOder) {
-		PagedResponseDTO<PriceHistory> pagedResponseDTO = priceHistoryService.getPriceHistoriesByProductId(id, page,
-				limit, sortField, sortOder);
+		PagedResponseDTO<PriceHistory> pagedResponseDTO = productService.getPriceHistoriesByProductId(id, page, limit,
+				sortField, sortOder);
 		ApiResponseDTO<PagedResponseDTO<PriceHistory>> apiResponseDTO = new ApiResponseDTO<>(
 				"Get price histories by product id success", HttpStatus.OK.value(), pagedResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);

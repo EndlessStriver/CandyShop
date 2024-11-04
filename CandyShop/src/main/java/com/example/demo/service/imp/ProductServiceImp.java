@@ -17,6 +17,7 @@ import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.PriceHistoryRequestDTO;
 import com.example.demo.dto.ProductRequestDTO;
 import com.example.demo.dto.ProductRequestUpdateDTO;
+import com.example.demo.dto.ProductResponseDTO;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Image;
@@ -24,8 +25,8 @@ import com.example.demo.model.PriceHistory;
 import com.example.demo.model.Product;
 import com.example.demo.model.Publisher;
 import com.example.demo.model.SubCategory;
+import com.example.demo.repository.PriceHistoryRepository;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.service.PriceHistoryService;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.PublisherService;
 import com.example.demo.service.S3Service;
@@ -40,20 +41,22 @@ public class ProductServiceImp implements ProductService {
 	private SubCategoryService subCategoryService;
 	private PublisherService publisherService;
 	private S3Service s3Service;
+	private PriceHistoryRepository priceHistoryRepository;
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
 
 	public ProductServiceImp(ProductRepository productRepository, SubCategoryService subCategoryService,
-			PublisherService publisherService, S3Service s3Service) {
+			PublisherService publisherService, S3Service s3Service, PriceHistoryRepository priceHistoryRepository) {
 		this.productRepository = productRepository;
 		this.subCategoryService = subCategoryService;
 		this.publisherService = publisherService;
 		this.s3Service = s3Service;
+		this.priceHistoryRepository = priceHistoryRepository;
 	}
 
 	@Override
 	@Transactional
-	public Product createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception {
+	public ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception {
 		String avatarName = null;
 		try {
 			Product product = new Product();
@@ -86,7 +89,8 @@ public class ProductServiceImp implements ProductService {
 					avatarName);
 			product.setMainImageName(avatarName);
 			product.setMainImageUrl(avatarUrl);
-			return productRepository.save(product);
+			Product myProduct = productRepository.save(product);
+			return convertProductToProductResponseDTO(myProduct);
 		} catch (Exception e) {
 			if (avatarName != null)
 				s3Service.deleteFile(avatarName);
@@ -95,13 +99,15 @@ public class ProductServiceImp implements ProductService {
 	}
 
 	@Override
-	public Product getProduct(String id) {
-		return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+	public ProductResponseDTO getProduct(String id) {
+		Product product = productRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+		return convertProductToProductResponseDTO(product);
 	}
 
 	@Override
 	@Transactional
-	public Product updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO) {
+	public ProductResponseDTO updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO) {
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 		if (productRequestUpdateDTO.getProductName() != null)
@@ -120,7 +126,8 @@ public class ProductServiceImp implements ProductService {
 			Publisher publisher = publisherService.getPublisher(productRequestUpdateDTO.getPublisherId());
 			product.setPublisher(publisher);
 		}
-		return productRepository.save(product);
+		Product myProduct = productRepository.save(product);
+		return convertProductToProductResponseDTO(myProduct);
 	}
 
 	@Override
@@ -140,13 +147,15 @@ public class ProductServiceImp implements ProductService {
 	}
 
 	@Override
-	public PagedResponseDTO<Product> getProducts(int page, int limit, String sortField, String sortOrder) {
+	public PagedResponseDTO<ProductResponseDTO> getProducts(int page, int limit, String sortField, String sortOrder) {
 		Sort sort = sortOrder.equalsIgnoreCase("desc") ? Sort.by(sortField).descending()
 				: Sort.by(sortField).ascending();
 		Pageable pageable = PageRequest.of(page, limit, sort);
 		Page<Product> pageProduct = productRepository.findAll(pageable);
-		PagedResponseDTO<Product> pagedResponseDTO = new PagedResponseDTO<>();
-		pagedResponseDTO.setContent(pageProduct.getContent());
+		PagedResponseDTO<ProductResponseDTO> pagedResponseDTO = new PagedResponseDTO<>();
+		List<ProductResponseDTO> content = pageProduct.getContent().stream()
+				.map(this::convertProductToProductResponseDTO).toList();
+		pagedResponseDTO.setContent(content);
 		pagedResponseDTO.setTotalElements(pageProduct.getTotalElements());
 		pagedResponseDTO.setTotalPages(pageProduct.getTotalPages());
 		pagedResponseDTO.setPageNumber(pageProduct.getNumber());
@@ -156,7 +165,7 @@ public class ProductServiceImp implements ProductService {
 
 	@Override
 	@Transactional
-	public Product updateProductMainImage(String id, MultipartFile mainImage) throws Exception {
+	public ProductResponseDTO updateProductMainImage(String id, MultipartFile mainImage) throws Exception {
 		String avatarName = null;
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -172,12 +181,13 @@ public class ProductServiceImp implements ProductService {
 				s3Service.deleteFile(avatarName);
 			throw e;
 		}
-		return productRepository.save(product);
+		Product myProduct = productRepository.save(product);
+		return convertProductToProductResponseDTO(myProduct);
 	}
 
 	@Override
 	@Transactional
-	public Product updateProductImages(String id, MultipartFile[] images) throws IOException, Exception {
+	public ProductResponseDTO updateProductImages(String id, MultipartFile[] images) throws IOException, Exception {
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 		if (product.getImages().size() + images.length > 5)
@@ -203,6 +213,65 @@ public class ProductServiceImp implements ProductService {
 			}
 			throw e;
 		}
-		return product;
+		return convertProductToProductResponseDTO(product);
+	}
+
+	@Override
+	@Transactional
+	public PriceHistory createPriceHistory(String productId, PriceHistoryRequestDTO priceHistoryRequestDTO) {
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+		PriceHistory priceHistory = new PriceHistory();
+		priceHistory.setProduct(product);
+		priceHistory.setNewPrice(priceHistoryRequestDTO.getNewPrice());
+		priceHistory.setPriceChangeReason(priceHistoryRequestDTO.getPriceChangeReason());
+		priceHistory.setPriceChangeEffectiveDate(priceHistoryRequestDTO.getPriceChangeEffectiveDate());
+		return priceHistoryRepository.save(priceHistory);
+	}
+
+	@Override
+	public PagedResponseDTO<PriceHistory> getPriceHistoriesByProductId(String productId, int page, int size,
+			String sortField, String sortOder) {
+		Sort sort = sortOder.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+		Pageable pageable = PageRequest.of(page, size, sort);
+		Page<PriceHistory> pagePriceHistory = priceHistoryRepository.findAll(pageable);
+
+		PagedResponseDTO<PriceHistory> pagedResponseDTO = new PagedResponseDTO<PriceHistory>();
+		pagedResponseDTO.setContent(pagePriceHistory.getContent());
+		pagedResponseDTO.setTotalPages(pagePriceHistory.getTotalPages());
+		pagedResponseDTO.setTotalElements(pagePriceHistory.getTotalElements());
+		pagedResponseDTO.setPageSize(pagePriceHistory.getSize());
+		pagedResponseDTO.setPageNumber(pagePriceHistory.getNumber());
+
+		return pagedResponseDTO;
+	}
+
+	@Override
+	public PriceHistory getCurrentPriceProductByProductId(String productId) {
+		return priceHistoryRepository.findCurrentPriceProductByProduct(productId, LocalDateTime.now())
+				.orElseThrow(() -> new ResourceNotFoundException("Price history not found"));
+	}
+
+	private ProductResponseDTO convertProductToProductResponseDTO(Product product) {
+
+		PriceHistory priceHistory = priceHistoryRepository
+				.findCurrentPriceProductByProduct(product.getProductId(), LocalDateTime.now())
+				.orElseThrow(() -> new ResourceNotFoundException("Price history not found"));
+
+		ProductResponseDTO productResponseDTO = new ProductResponseDTO();
+		productResponseDTO.setProductId(product.getProductId());
+		productResponseDTO.setProductName(product.getProductName());
+		productResponseDTO.setDescription(product.getDescription());
+		productResponseDTO.setDimension(product.getDimension());
+		productResponseDTO.setWeight(product.getWeight());
+		productResponseDTO.setMainImageUrl(product.getMainImageUrl());
+		productResponseDTO.setSubCategory(product.getSubCategory());
+		productResponseDTO.setPublisher(product.getPublisher());
+		productResponseDTO.setCurrentPrice(priceHistory);
+		productResponseDTO.setImages(product.getImages());
+		productResponseDTO.setCreatedAt(product.getCreatedAt());
+		productResponseDTO.setUpdatedAt(product.getUpdatedAt());
+
+		return productResponseDTO;
 	}
 }

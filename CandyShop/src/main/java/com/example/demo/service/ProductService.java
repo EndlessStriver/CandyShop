@@ -8,23 +8,30 @@ import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.PriceHistoryRequestDTO;
 import com.example.demo.dto.ProductRequestDTO;
 import com.example.demo.dto.ProductRequestUpdateDTO;
+import com.example.demo.dto.ProductResponseDTO;
 import com.example.demo.model.PriceHistory;
-import com.example.demo.model.Product;
 
 public interface ProductService {
-	
-	public Product createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception;
 
-	public Product getProduct(String id);
+	public ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception;
 
-	public Product updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO);
+	public ProductResponseDTO getProduct(String id);
+
+	public ProductResponseDTO updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO);
 
 	public void deleteProduct(String id) throws Exception;
 
-	public PagedResponseDTO<Product> getProducts(int page, int limit, String sortField, String sortOrder);
-	
-	public Product updateProductMainImage(String id, MultipartFile mainImage) throws IOException, Exception;
-	
-	public Product updateProductImages(String id, MultipartFile[] images) throws IOException, Exception;
-	
+	public PagedResponseDTO<ProductResponseDTO> getProducts(int page, int limit, String sortField, String sortOrder);
+
+	public ProductResponseDTO updateProductMainImage(String id, MultipartFile mainImage) throws IOException, Exception;
+
+	public ProductResponseDTO updateProductImages(String id, MultipartFile[] images) throws IOException, Exception;
+
+	public PriceHistory createPriceHistory(String productId, PriceHistoryRequestDTO priceHistoryRequestDTO);
+
+	public PagedResponseDTO<PriceHistory> getPriceHistoriesByProductId(String productId, int page, int size,
+			String sortField, String sortOder);
+
+	public PriceHistory getCurrentPriceProductByProductId(String productId);
+
 }
