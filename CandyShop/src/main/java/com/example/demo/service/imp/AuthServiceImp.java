@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.LoginRequestDTO;
+import com.example.demo.dto.LoginResponseDTO;
 import com.example.demo.dto.RegisterRequestDTO;
 import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
@@ -23,6 +24,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmailService;
 import com.example.demo.service.RedisService;
+import com.example.demo.util.JwtUtil;
 
 @Service
 public class AuthServiceImp implements AuthService {
@@ -37,22 +39,47 @@ public class AuthServiceImp implements AuthService {
 	private RedisService redisService;
 	@Value("${spring.mail.username}")
 	private String myEmail;
+	private JwtUtil jwtUtil;
 
 	public AuthServiceImp(AuthenticationManager authenticationManager, UserRepository userRepository,
-			BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, RedisService redisService) {
+			BCryptPasswordEncoder bCryptPasswordEncoder, EmailService emailService, RedisService redisService,
+			JwtUtil jwtUtil) {
 		this.authenticationManager = authenticationManager;
 		this.userRepository = userRepository;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 		this.emailService = emailService;
 		this.redisService = redisService;
+		this.jwtUtil = jwtUtil;
 	}
 
 	@Override
-	public void login(LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
+	public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
 		try {
 			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
 					loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
-			authentication.isAuthenticated();
+			if(authentication.isAuthenticated()) {
+				User user = userRepository.findByUserName(loginRequestDTO.getUsername())
+						.orElseThrow(() -> new UnauthorizedException("User not found"));
+				String token = jwtUtil.generateToken(user.getUserName());
+				LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+				loginResponseDTO.setUserId(user.getUserId());
+				loginResponseDTO.setUserName(user.getUserName());
+				loginResponseDTO.setFirstName(user.getFirstName());
+				loginResponseDTO.setLastName(user.getLastName());
+				loginResponseDTO.setPhoneNumber(user.getPhoneNumber());
+				loginResponseDTO.setEmail(user.getEmail());
+				loginResponseDTO.setGender(user.getGender());
+				loginResponseDTO.setAvatarUrl(user.getAvatarUrl());
+				loginResponseDTO.setBirthDay(user.getBirthDay());
+				loginResponseDTO.setCreatedAt(user.getCreatedAt());
+				loginResponseDTO.setUpdatedAt(user.getUpdatedAt());
+				loginResponseDTO.setRole(user.getRole());
+				loginResponseDTO.setToken(token);
+				loginResponseDTO.setRefreshToken(token);
+				return loginResponseDTO;
+			} else {
+				throw new BadCredentialsException("Invalid username or password");
+			}
 		} catch (BadCredentialsException e) {
 			throw new UnauthorizedException(e.getMessage());
 		} catch (Exception e) {

@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import com.example.demo.service.MyUserDetailsService;
@@ -20,6 +21,12 @@ import com.example.demo.service.MyUserDetailsService;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+	
+	private JwtRequestFilter jwtRequestFilter;
+	
+	public WebSecurityConfig(JwtRequestFilter jwtRequestFilter) {
+		this.jwtRequestFilter = jwtRequestFilter;
+	}
 
 	@Bean
 	BCryptPasswordEncoder passwordEncoder() {
@@ -54,6 +61,7 @@ public class WebSecurityConfig {
 				.csrf(csrf -> csrf.disable());
 		http.sessionManagement(
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 }

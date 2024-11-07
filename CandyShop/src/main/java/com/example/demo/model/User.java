@@ -57,6 +57,7 @@ public class User {
 	private Gender gender;
 	
 	@Column(name = "avatar", nullable = true)
+	@JsonIgnore
 	private String avatar;
 	
 	@Column(name = "avatar_url", nullable = true)

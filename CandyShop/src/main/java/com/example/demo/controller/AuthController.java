@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.LoginRequestDTO;
+import com.example.demo.dto.LoginResponseDTO;
 import com.example.demo.dto.RegisterRequestDTO;
 import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
@@ -28,8 +29,8 @@ public class AuthController {
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
-		authService.login(loginRequestDTO);
-		return ResponseEntity.ok(new ApiResponseDTO<>("Login Success!", HttpStatus.OK.value(), null));
+		LoginResponseDTO loginResponseDTO = authService.login(loginRequestDTO);
+		return ResponseEntity.ok(new ApiResponseDTO<>("Login Success!", HttpStatus.OK.value(), loginResponseDTO));
 	}
 	
 	@PostMapping("/register")
