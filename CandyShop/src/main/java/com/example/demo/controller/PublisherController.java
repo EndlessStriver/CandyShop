@@ -20,7 +20,7 @@ import com.example.demo.model.Publisher;
 import com.example.demo.service.PublisherService;
 
 @RestController
-@RequestMapping("api/publishers")
+@RequestMapping("/api/publishers")
 public class PublisherController {
 
 	private PublisherService publisherService;

@@ -1,48 +1,54 @@
 package com.example.demo.exception;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.example.demo.dto.ApiResponseDTO;
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleGlobalException(Exception ex) {
-        String errorMessage = ex.getMessage();
-        ApiResponseDTO<Void> response = new ApiResponseDTO<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR.value(), null);
-        return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
+        Map<String, Object> errors = new LinkedHashMap<String, Object>();
+        errors.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 	
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<ApiResponseDTO<Void>> handleResourceNotFoundException(ResourceNotFoundException ex){
-		String errorMessage = ex.getMessage();
-		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.NOT_FOUND.value(), null);
-		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.NOT_FOUND);
+	public ResponseEntity<Map<String, Object>> handleResourceNotFoundException(ResourceNotFoundException ex){
+		Map<String, Object> errors = new LinkedHashMap<String, Object>();
+        errors.put("status", HttpStatus.NOT_FOUND.value());
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.NOT_FOUND);
 	}
 	
 	@ExceptionHandler(UnauthorizedException.class)
-	public ResponseEntity<ApiResponseDTO<Void>> handleLoginFailedException(UnauthorizedException ex){
-		String errorMessage = ex.getMessage();
-		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.UNAUTHORIZED.value(), null);
-		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.UNAUTHORIZED);
+	public ResponseEntity<Map<String, Object>> handleLoginFailedException(UnauthorizedException ex){
+		Map<String, Object> errors = new LinkedHashMap<String, Object>();
+        errors.put("status", HttpStatus.UNAUTHORIZED.value());
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(ResourceConflictException.class)
-	public ResponseEntity<ApiResponseDTO<Void>> resoureConflicException(ResourceConflictException ex){
-		String errorMessage = ex.getMessage();
-		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.CONFLICT.value(), null);
-		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.CONFLICT);
+	public ResponseEntity<Map<String, Object>> resoureConflicException(ResourceConflictException ex){
+		Map<String, Object> errors = new LinkedHashMap<String, Object>();
+        errors.put("status", HttpStatus.CONFLICT.value());
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.CONFLICT);
 	}
 	
 	@ExceptionHandler(BadRequestException.class)
-	public ResponseEntity<ApiResponseDTO<Void>> badRequestException(BadRequestException ex){
-		String errorMessage = ex.getMessage();
-		ApiResponseDTO<Void> response = new ApiResponseDTO<Void>(errorMessage, HttpStatus.BAD_REQUEST.value(), null);
-		return new ResponseEntity<ApiResponseDTO<Void>>(response, HttpStatus.BAD_REQUEST);
+	public ResponseEntity<Map<String, Object>> badRequestException(BadRequestException ex){
+		Map<String, Object> errors = new LinkedHashMap<String, Object>();
+        errors.put("status", HttpStatus.BAD_REQUEST.value());
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.BAD_REQUEST);
 	}
 	
 }

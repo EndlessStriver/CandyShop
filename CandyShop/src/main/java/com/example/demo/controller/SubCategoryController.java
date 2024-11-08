@@ -17,7 +17,7 @@ import com.example.demo.model.SubCategory;
 import com.example.demo.service.SubCategoryService;
 
 @RestController
-@RequestMapping("api/subcategories")
+@RequestMapping("/api/subcategories")
 public class SubCategoryController {
 
 	private SubCategoryService subCategoryService;

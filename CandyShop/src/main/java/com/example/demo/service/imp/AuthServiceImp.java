@@ -20,6 +20,7 @@ import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
+import com.example.demo.model.enums.Gender;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmailService;
@@ -107,7 +108,7 @@ public class AuthServiceImp implements AuthService {
 			user.setLastName(registerRequestDTO.getLastName());
 			user.setPhoneNumber(registerRequestDTO.getPhoneNumber());
 			user.setEmail(registerRequestDTO.getEmail());
-			user.setGender(registerRequestDTO.getGender());
+			user.setGender(Gender.valueOf(registerRequestDTO.getGender()));
 			user.setPassword(bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()));
 			user.setBirthDay(registerRequestDTO.getBirthDay());
 

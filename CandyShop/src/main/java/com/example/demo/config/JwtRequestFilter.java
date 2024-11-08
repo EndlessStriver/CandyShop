@@ -2,6 +2,8 @@ package com.example.demo.config;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,7 +12,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.service.MyUserDetailsService;
 import com.example.demo.util.JwtUtil;
@@ -75,12 +76,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json");
 			
-			ApiResponseDTO<Void> apiResponse = new ApiResponseDTO<>();
-			apiResponse.setStatus(401);
-			apiResponse.setMessage("Unauthorized access");
-			apiResponse.setData(null);
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			errors.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+			errors.put("message", "Unauthorized access");
 			
-			response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
+			response.getWriter().write(new ObjectMapper().writeValueAsString(errors));
 		}
 	}
 
