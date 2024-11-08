@@ -99,7 +99,7 @@ public class ProductServiceImp implements ProductService {
 	}
 
 	@Override
-	public ProductResponseDTO getProduct(String id) {
+	public ProductResponseDTO getProductResponse(String id) {
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 		return convertProductToProductResponseDTO(product);
@@ -273,5 +273,10 @@ public class ProductServiceImp implements ProductService {
 		productResponseDTO.setUpdatedAt(product.getUpdatedAt());
 
 		return productResponseDTO;
+	}
+
+	@Override
+	public Product findProduct(String id) {
+		return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 	}
 }

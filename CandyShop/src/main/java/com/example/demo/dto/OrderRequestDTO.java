@@ -1,7 +1,6 @@
 package com.example.demo.dto;
 
-import org.springframework.web.multipart.MultipartFile;
-
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class ProductRequestDTO extends ProductRequestUpdateDTO {
-	private MultipartFile mainImage;
-	private double price;
+public class OrderRequestDTO extends OrderRequestUpdateDTO{
+	private List<OrderDetailRequest> orderDetails;
 }

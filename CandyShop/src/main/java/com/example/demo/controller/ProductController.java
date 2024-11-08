@@ -38,7 +38,7 @@ public class ProductController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getProductById(@PathVariable String id) {
-		ProductResponseDTO product = productService.getProduct(id);
+		ProductResponseDTO product = productService.getProductResponse(id);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Get product success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);

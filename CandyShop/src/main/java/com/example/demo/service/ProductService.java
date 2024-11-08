@@ -10,12 +10,15 @@ import com.example.demo.dto.ProductRequestDTO;
 import com.example.demo.dto.ProductRequestUpdateDTO;
 import com.example.demo.dto.ProductResponseDTO;
 import com.example.demo.model.PriceHistory;
+import com.example.demo.model.Product;
 
 public interface ProductService {
 
 	public ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception;
 
-	public ProductResponseDTO getProduct(String id);
+	public ProductResponseDTO getProductResponse(String id);
+	
+	public Product findProduct(String id);
 
 	public ProductResponseDTO updateProduct(String id, ProductRequestUpdateDTO productRequestUpdateDTO);
 

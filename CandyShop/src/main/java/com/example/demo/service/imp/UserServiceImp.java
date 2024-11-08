@@ -239,4 +239,9 @@ public class UserServiceImp implements UserService {
 		return userRepository.save(user);
 	}
 
+	@Override
+	public User getUserById(String userId) {
+		return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	}
+
 }

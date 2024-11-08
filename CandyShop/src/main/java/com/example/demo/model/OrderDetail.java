@@ -1,11 +1,16 @@
 package com.example.demo.model;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,4 +41,26 @@ public class OrderDetail {
 	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "price_history_id", nullable = false)
 	private PriceHistory priceHistory;
+	
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
+	
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt;
+	
+	@PrePersist
+	public void prePersist() {
+		createdAt = LocalDateTime.now();
+		updatedAt = LocalDateTime.now();
+		orderDetailId = UUID.randomUUID().toString();
+	}
+	
+	@PreUpdate
+	public void preUpdate() {
+		updatedAt = LocalDateTime.now();
+	}
+	
+	public double getSubTotal() {
+		return quantity * priceHistory.getNewPrice();
+	}
 }

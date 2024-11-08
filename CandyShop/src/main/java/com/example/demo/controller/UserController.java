@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,11 +20,14 @@ import com.example.demo.dto.AddressRequestDTO;
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
+import com.example.demo.dto.OrderPageResponseDTO;
+import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.dto.VerifyUserRequest;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Address;
 import com.example.demo.model.User;
+import com.example.demo.service.OrderService;
 import com.example.demo.service.UserService;
 
 @RestController
@@ -31,9 +35,44 @@ import com.example.demo.service.UserService;
 public class UserController {
 
 	private UserService userService;
+	private OrderService orderService;
 
-	public UserController(UserService userService) {
+	public UserController(UserService userService, OrderService orderService) {
 		this.userService = userService;
+		this.orderService = orderService;
+	}
+	
+	@GetMapping("/{userId}/addresses/{addressId}")
+	public ResponseEntity<?> getAddress(@PathVariable String userId, @PathVariable String addressId) throws Exception {
+		Address address = userService.getAddress(userId, addressId);
+		ApiResponseDTO<Address> response = new ApiResponseDTO<>("Address retrieved successfully", HttpStatus.OK.value(),
+				address);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{userId}/addresses")
+	public ResponseEntity<?> getAddresses(@PathVariable String userId) throws Exception {
+		List<Address> addresses = userService.getAddresses(userId);
+		ApiResponseDTO<List<Address>> response = new ApiResponseDTO<>("Addresses retrieved successfully",
+				HttpStatus.OK.value(), addresses);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{userId}/orders")
+	public ResponseEntity<?> getOrders(@PathVariable String userId, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "0") int limit, @RequestParam(defaultValue = "createdAt") String sortField, @RequestParam(defaultValue = "asc") String sortOrder)
+			throws Exception {
+		PagedResponseDTO<OrderPageResponseDTO> pagedResponseDTO = orderService.getOrdersByUserId(userId, page, limit, sortField, sortOrder);
+		ApiResponseDTO<PagedResponseDTO<OrderPageResponseDTO>> response = new ApiResponseDTO<>("Orders retrieved successfully", HttpStatus.OK.value(), pagedResponseDTO);
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/{userId}")
+	public ResponseEntity<?> getUser(@PathVariable String userId) throws ResourceNotFoundException {
+		User user = userService.getUserById(userId);
+		ApiResponseDTO<User> response = new ApiResponseDTO<>("User retrieved successfully", HttpStatus.OK.value(),
+				user);
+		return ResponseEntity.ok(response);
 	}
 
 	@PatchMapping("/{userId}")
@@ -98,24 +137,9 @@ public class UserController {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/{userId}/addresses/{addressId}")
-	public ResponseEntity<?> getAddress(@PathVariable String userId, @PathVariable String addressId) throws Exception {
-		Address address = userService.getAddress(userId, addressId);
-		ApiResponseDTO<Address> response = new ApiResponseDTO<>("Address retrieved successfully", HttpStatus.OK.value(),
-				address);
-		return ResponseEntity.ok(response);
-	}
-
-	@GetMapping("/{userId}/addresses")
-	public ResponseEntity<?> getAddresses(@PathVariable String userId) throws Exception {
-		List<Address> addresses = userService.getAddresses(userId);
-		ApiResponseDTO<List<Address>> response = new ApiResponseDTO<>("Addresses retrieved successfully",
-				HttpStatus.OK.value(), addresses);
-		return ResponseEntity.ok(response);
-	}
-	
 	@PostMapping("/{userId}/verify")
-	public ResponseEntity<?> verifyUser(@PathVariable String userId, @RequestBody VerifyUserRequest verifyUserRequest) throws Exception {
+	public ResponseEntity<?> verifyUser(@PathVariable String userId, @RequestBody VerifyUserRequest verifyUserRequest)
+			throws Exception {
 		User user = userService.verifyUser(userId, verifyUserRequest);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("User verified successfully", HttpStatus.OK.value(), user);
 		return ResponseEntity.ok(response);

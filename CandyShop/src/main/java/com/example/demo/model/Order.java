@@ -36,9 +36,6 @@ public class Order {
 	@Column(name = "order_id")
 	private String orderId;
 	
-	@Column(name = "order_date", nullable = false)
-	private LocalDateTime orderDate;
-	
 	@Column(name = "total_amount", nullable = false)
 	private double totalAmount;
 	
@@ -72,6 +69,7 @@ public class Order {
 	
 	@ManyToOne(cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "user_id", nullable = true)
+	@JsonIgnore
 	private User user;
 	
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -89,10 +87,16 @@ public class Order {
 		this.createdAt = LocalDateTime.now();
 		this.updatedAt = LocalDateTime.now();
 		this.orderId = UUID.randomUUID().toString();
+		this.status = OrderStatus.PENDING_CONFIRMATION;
+		this.totalAmount = calculateTotalAmount();
 	}
 	
 	@PreUpdate
 	public void preUpdate() {
 		this.updatedAt = LocalDateTime.now();
+	}
+	
+	private double calculateTotalAmount() {
+		return this.orderDetails.stream().mapToDouble(OrderDetail::getSubTotal).sum();
 	}
 }

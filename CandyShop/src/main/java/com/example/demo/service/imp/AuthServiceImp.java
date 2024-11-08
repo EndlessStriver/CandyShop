@@ -111,13 +111,7 @@ public class AuthServiceImp implements AuthService {
 			user.setPassword(bCryptPasswordEncoder.encode(registerRequestDTO.getPassword()));
 			user.setBirthDay(registerRequestDTO.getBirthDay());
 
-			String otp = generateOTP();
-			redisService.setWithExpireTime(String.format("otp?email=%s", registerRequestDTO.getEmail()), otp, 60,
-					TimeUnit.SECONDS);
-			emailService.sendEmailVerifyOTP(myEmail, registerRequestDTO.getEmail(), otp);
-
 			return userRepository.save(user);
-
 		} catch (DataIntegrityViolationException e) {
 			throw e;
 		} catch (Exception e) {

@@ -15,7 +15,9 @@ import com.example.demo.model.Address;
 import com.example.demo.model.User;
 
 public interface UserService {
-
+	
+	public User getUserById(String userId);
+	
 	public User updateUser(String userId, UserProfileRequestDTO profileRequestDTO)
 			throws Exception, ResourceNotFoundException;
 
