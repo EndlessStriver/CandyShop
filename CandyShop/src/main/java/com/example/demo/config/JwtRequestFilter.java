@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,12 +39,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		try {
 			String requestURI = request.getRequestURI();
-			
-			if (Arrays.asList(EndPoint.PUBLIC_ENDPOINT_POST).contains(requestURI)) {
+			if (Arrays.asList(EndPoint.PUBLIC_ENDPOINT_POST).contains(requestURI)
+					|| checkEndpointSwaggger(requestURI)) {
 				filterChain.doFilter(request, response);
 				return;
 			}
-			
+
 			final String authorizationHeader = request.getHeader("Authorization");
 
 			String username = null;
@@ -75,13 +76,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			SecurityContextHolder.clearContext();
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json");
-			
+
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			errors.put("status", HttpServletResponse.SC_UNAUTHORIZED);
 			errors.put("message", "Unauthorized access");
-			
+
 			response.getWriter().write(new ObjectMapper().writeValueAsString(errors));
 		}
+	}
+	
+	private boolean checkEndpointSwaggger(String requestURI) {
+		String regex = "(swagger-ui|v3/api-docs)";
+		Pattern pattern = Pattern.compile(regex);
+		return pattern.matcher(requestURI).find();
 	}
 
 }

@@ -31,7 +31,7 @@ import com.example.demo.service.OrderService;
 import com.example.demo.service.UserService;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
 	private UserService userService;

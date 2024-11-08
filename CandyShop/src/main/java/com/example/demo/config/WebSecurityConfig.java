@@ -21,9 +21,9 @@ import com.example.demo.service.MyUserDetailsService;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-	
+
 	private JwtRequestFilter jwtRequestFilter;
-	
+
 	public WebSecurityConfig(JwtRequestFilter jwtRequestFilter) {
 		this.jwtRequestFilter = jwtRequestFilter;
 	}
@@ -55,8 +55,10 @@ public class WebSecurityConfig {
 			corsConfig.setAllowedMethods(Arrays.asList(EndPoint.ALLOWED_METHODS));
 			corsConfig.setAllowCredentials(true);
 			return corsConfig;
-		})).authorizeHttpRequests(authorizeRequests -> authorizeRequests
-				.requestMatchers(HttpMethod.POST, EndPoint.PUBLIC_ENDPOINT_POST).permitAll().anyRequest().authenticated())
+		})).authorizeHttpRequests(
+				authorizeRequests -> authorizeRequests.requestMatchers(HttpMethod.GET, EndPoint.PUBLIC_ENDPOINT_GET)
+						.permitAll().requestMatchers(HttpMethod.POST, EndPoint.PUBLIC_ENDPOINT_POST).permitAll()
+						.anyRequest().authenticated())
 				.formLogin(formLogin -> formLogin.disable()).httpBasic(httpBasic -> httpBasic.disable())
 				.csrf(csrf -> csrf.disable());
 		http.sessionManagement(
