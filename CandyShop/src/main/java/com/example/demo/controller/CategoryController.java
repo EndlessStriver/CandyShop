@@ -1,9 +1,12 @@
 package com.example.demo.controller;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,11 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
+import com.example.demo.dto.ApiResponseErrorDTO;
 import com.example.demo.dto.CategoryRequestDTO;
-import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.model.Category;
 import com.example.demo.model.SubCategory;
 import com.example.demo.service.CategoryService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -53,7 +58,15 @@ public class CategoryController {
 	}
 	
 	@PatchMapping("/{categoryId}")
-	public ResponseEntity<?> updateCategory(@PathVariable String categoryId, @RequestBody CategoryRequestDTO categoryName) {
+	public ResponseEntity<?> updateCategory(@PathVariable String categoryId, @Valid @RequestBody CategoryRequestDTO categoryName, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().stream().forEach(result -> {
+				errors.put(result.getField(), result.getDefaultMessage());
+			});
+			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Update Category Failed!" , HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.badRequest().body(error);
+		}
 		Category category = categoryService.updateCategory(categoryId, categoryName);
 		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category updated successfully", HttpStatus.OK.value(),
 				category);
@@ -61,7 +74,15 @@ public class CategoryController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDTO categoryName) {
+	public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequestDTO categoryName, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().stream().forEach(result -> {
+				errors.put(result.getField(), result.getDefaultMessage());
+			});
+			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Create Category Failed!" , HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.badRequest().body(error);
+		}
 		Category category = categoryService.createCategory(categoryName);
 		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category created successfully", HttpStatus.CREATED.value(), category);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);

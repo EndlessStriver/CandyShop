@@ -35,7 +35,7 @@ public class DistrictServiceImp implements DistrictService {
 		Province province = provinceRepository.findById(provinceId)
 				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
 		if (districtRepository.existsByDistrictName(districtRequestDTO.getDistrictName()))
-			throw new ResourceConflictException("District name already exists");
+			throw new ResourceConflictException("districtName", "District name already exists");
 		District district = new District();
 		district.setDistrictName(districtRequestDTO.getDistrictName());
 		district.setProvince(province);
@@ -49,7 +49,7 @@ public class DistrictServiceImp implements DistrictService {
 		District district = districtRepository.findById(districtId)
 				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
 		if (district.getDistrictName().equals(districtRequestDTO.getDistrictName()))
-			throw new ResourceConflictException("No changes were made to the district name");
+			throw new ResourceConflictException("districtName", "No changes were made to the district name");
 		district.setDistrictName(districtRequestDTO.getDistrictName());
 		return districtRepository.save(district);
 	}

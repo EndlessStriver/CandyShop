@@ -28,13 +28,13 @@ public class PublisherServiceImp implements PublisherService{
 	@Transactional
 	public Publisher createPublisher(PublisherRequestDTO publisherRequestDTO) {
 		if (publisherRepository.existsByPublisherNameIgnoreCase(publisherRequestDTO.getPublisherName()))
-			throw new ResourceConflictException("Publisher already exists");
+			throw new ResourceConflictException("publisherName", "Publisher name already exists");
 		if (publisherRepository.existsByPhoneNumber(publisherRequestDTO.getPhoneNumber()))
-			throw new ResourceConflictException("Phone number already exists");
+			throw new ResourceConflictException("phoneNumber", "Phone number already exists");
 		if (publisherRepository.existsByEmail(publisherRequestDTO.getEmail()))
-			throw new ResourceConflictException("Email already exists");
+			throw new ResourceConflictException("email", "Email already exists");
 		if(publisherRepository.existsByAddressIgnoreCase(publisherRequestDTO.getAddress()))
-            throw new ResourceConflictException("Address already exists");
+            throw new ResourceConflictException("address", "Address already exists");
 	    Publisher publisher = new Publisher();
 	    publisher.setPublisherName(publisherRequestDTO.getPublisherName());
 	    publisher.setPhoneNumber(publisherRequestDTO.getPhoneNumber());
@@ -55,16 +55,13 @@ public class PublisherServiceImp implements PublisherService{
 		Publisher publisher = publisherRepository.findById(publisherId)
 				.orElseThrow(() -> new ResourceNotFoundException("Publisher not found"));
 		if (publisherRepository.existsByPublisherNameIgnoreCase(publisherRequestDTO.getPublisherName()))
-			throw new ResourceConflictException("Publisher name already exists");
+			throw new ResourceConflictException("publisherName", "Publisher name already exists");
 		if (publisherRepository.existsByPhoneNumber(publisherRequestDTO.getPhoneNumber()))
-			throw new ResourceConflictException("Phone number already exists");
+			throw new ResourceConflictException("phoneNumber", "Phone number already exists");
 		if (publisherRepository.existsByEmail(publisherRequestDTO.getEmail()))
-			throw new ResourceConflictException("Email already exists");
+			throw new ResourceConflictException("email", "Email already exists");
 		if(publisherRepository.existsByAddressIgnoreCase(publisherRequestDTO.getAddress()))
-            throw new ResourceConflictException("Address already exists");
-		if (publisherRequestDTO.getPublisherName() == null && publisherRequestDTO.getPhoneNumber() == null
-				&& publisherRequestDTO.getAddress() == null && publisherRequestDTO.getEmail() == null)
-			throw new ResourceConflictException("No changes found");
+			throw new ResourceConflictException("address", "Address already exists");
 		if (publisherRequestDTO.getPublisherName() != null)
 			publisher.setPublisherName(publisherRequestDTO.getPublisherName());
 		if (publisherRequestDTO.getPhoneNumber() != null)

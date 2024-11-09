@@ -94,13 +94,13 @@ public class AuthServiceImp implements AuthService {
 		try {
 
 			if (userRepository.existsByUserName(registerRequestDTO.getUserName()) == true)
-				throw new ResourceConflictException("Username already exists");
+				throw new ResourceConflictException("userName", "Username already exists");
 
 			if (userRepository.existsByEmail(registerRequestDTO.getEmail()) == true)
-				throw new ResourceConflictException("Email already exists");
+				throw new ResourceConflictException("email", "Email already exists");
 
 			if (userRepository.existsByPhoneNumber(registerRequestDTO.getPhoneNumber()) == true)
-				throw new ResourceConflictException("Phone number already exists");
+				throw new ResourceConflictException("phoneNumber", "Phone number already exists");
 
 			User user = new User();
 			user.setUserName(registerRequestDTO.getUserName());

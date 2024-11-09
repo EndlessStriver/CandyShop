@@ -58,7 +58,7 @@ public class AuthController {
 			bindingResult.getFieldErrors().stream().forEach(result -> {
 				errors.put(result.getField(), result.getDefaultMessage());
 			});
-			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Login Failed!", HttpStatus.BAD_REQUEST.value(), errors);
+			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Register Failed!", HttpStatus.BAD_REQUEST.value(), errors);
 			return ResponseEntity.badRequest().body(error);
 		}
 		User user = authService.register(registerRequestDTO);

@@ -28,7 +28,7 @@ public class ProvinceServiceImp implements ProvinceService {
 	@Transactional
 	public Province createProvince(ProvinceRequestDTO provinceRequestDTO) throws Exception, ResourceConflictException {
 		if (provinceRepository.existsByProvinceName(provinceRequestDTO.getProvinceName()))
-			throw new ResourceConflictException("Province name already exists");
+			throw new ResourceConflictException("provinceName", "Province name already exists");
 		Province province = new Province();
 		province.setProvinceName(provinceRequestDTO.getProvinceName());
 		return provinceRepository.save(province);
@@ -40,7 +40,7 @@ public class ProvinceServiceImp implements ProvinceService {
 		Province province = provinceRepository.findById(provinceId)
 				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
 		if (provinceRequestDTO.getProvinceName().equals(province.getProvinceName()))
-			throw new ResourceConflictException("No changes were made to the province name");
+			throw new ResourceConflictException("provinceName", "No changes were made to the province name");
 		return provinceRepository.save(province);
 	}
 

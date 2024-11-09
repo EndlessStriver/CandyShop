@@ -67,13 +67,8 @@ public class UserServiceImp implements UserService {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		
-		if (profileRequestDTO.getFirstName() == null && profileRequestDTO.getLastName() == null
-				&& profileRequestDTO.getPhoneNumber() == null && profileRequestDTO.getGender() == null
-				&& profileRequestDTO.getBirthDay() == null)
-			throw new Exception("No data to update");
-		
 		if (userRepository.existsByPhoneNumber(profileRequestDTO.getPhoneNumber()))
-            throw new ResourceConflictException("Phone number already");
+            throw new ResourceConflictException("phoneNumber", "Phone number already");
 
 		String firstName = profileRequestDTO.getFirstName();
 		String lastName = profileRequestDTO.getLastName();
@@ -137,7 +132,7 @@ public class UserServiceImp implements UserService {
 			throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 		if (userRepository.existsByEmail(changeEmailRequestDTO.getNewEmail()))
-			throw new ResourceConflictException("Email already exists");
+			throw new ResourceConflictException("email", "Email already exists");
 		if (!bycryptPasswordEncoder.matches(changeEmailRequestDTO.getPassword(), user.getPassword()))
 			throw new UnauthorizedException("Password is incorrect");
 		Object otp = redisService.get(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));

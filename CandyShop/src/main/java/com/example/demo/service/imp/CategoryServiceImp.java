@@ -25,7 +25,7 @@ public class CategoryServiceImp implements CategoryService{
 	@Transactional
 	public Category createCategory(CategoryRequestDTO categoryName) {
 		if (categoryRepository.existsByCategoryNameIgnoreCase(categoryName.getCategoryName()))
-			throw new ResourceConflictException("Category name already exists");
+			throw new ResourceConflictException("categoryName", "Category name already exists");
 		Category category = new Category();
 		category.setCategoryName(categoryName.getCategoryName());
 		return categoryRepository.save(category);
@@ -37,9 +37,9 @@ public class CategoryServiceImp implements CategoryService{
 		Category category = categoryRepository.findById(categoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 		if (categoryRepository.existsByCategoryNameIgnoreCase(categoryName.getCategoryName()))
-			throw new ResourceConflictException("Category name already exists");
-		if (category.getCategoryName().equals(categoryName))
-			throw new ResourceConflictException("Category name is the same");
+			throw new ResourceConflictException("categoryName", "Category name already exists");
+		if (category.getCategoryName().equals(categoryName.getCategoryName()))
+			throw new ResourceConflictException("categoryName", "Category name is the same");
 		category.setCategoryName(categoryName.getCategoryName());
 		return categoryRepository.save(category);
 	}

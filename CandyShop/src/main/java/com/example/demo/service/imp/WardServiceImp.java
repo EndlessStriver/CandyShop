@@ -33,7 +33,7 @@ public class WardServiceImp implements WardService {
 	public Ward createWard(String districtId, WardRequestDTO wardRequestDTO)
 			throws Exception, ResourceNotFoundException, ResourceConflictException {
 		if (wardRepository.existsByWardName(wardRequestDTO.getWardName()))
-			throw new ResourceConflictException("Ward name is exist!");
+			throw new ResourceConflictException("wardName", "Ward name is exist!");
 		District district = districtRepository.findById(districtId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found district"));
 		Ward ward = new Ward();
@@ -49,7 +49,7 @@ public class WardServiceImp implements WardService {
 			throws Exception, ResourceNotFoundException, ResourceConflictException {
 		Ward ward = wardRepository.findById(wardId).orElseThrow(() -> new ResourceNotFoundException("Not found ward"));
 		if (ward.getWardName().equals(wardRequestDTO.getWardName()))
-			throw new ResourceConflictException("No change in Ward Name!");
+			throw new ResourceConflictException("wardName", "No change in Ward Name!");
 		ward.setWardName(wardRequestDTO.getWardName());
 		Ward myWard = wardRepository.save(ward);
 		return myWard;
