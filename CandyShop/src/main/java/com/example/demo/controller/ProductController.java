@@ -1,11 +1,15 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +29,8 @@ import com.example.demo.dto.ProductResponseDTO;
 import com.example.demo.model.PriceHistory;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/products")
@@ -56,7 +62,17 @@ public class ProductController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> createProduct(ProductRequestDTO productRequestDTO) throws IOException, Exception {
+	public ResponseEntity<?> createProduct(@Valid @ModelAttribute ProductRequestDTO productRequestDTO, BindingResult bindingResult) throws IOException, Exception {
+		if(bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			if(productRequestDTO.getMainImage().isEmpty())
+                errors.put("mainImage", "Main image is required");
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
+		}
 		ProductResponseDTO product = productService.createProduct(productRequestDTO);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Create product success",
 				HttpStatus.CREATED.value(), product);
