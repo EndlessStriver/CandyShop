@@ -116,8 +116,8 @@ public class ProductServiceImp implements ProductService {
 			product.setDescription(productRequestUpdateDTO.getDescription());
 		if (productRequestUpdateDTO.getDimension() != null)
 			product.setDimension(productRequestUpdateDTO.getDimension());
-		if (productRequestUpdateDTO.getWeight() != 0)
-			product.setWeight(productRequestUpdateDTO.getWeight());
+		if (productRequestUpdateDTO.getWeight() != null)
+			product.setWeight(productRequestUpdateDTO.getWeight().doubleValue());
 		if (productRequestUpdateDTO.getSubCategoryId() != null) {
 			SubCategory subCategory = subCategoryService.getSubCategory(productRequestUpdateDTO.getSubCategoryId());
 			product.setSubCategory(subCategory);

@@ -62,15 +62,17 @@ public class ProductController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> createProduct(@Valid @ModelAttribute ProductRequestDTO productRequestDTO, BindingResult bindingResult) throws IOException, Exception {
-		if(bindingResult.hasErrors()) {
+	public ResponseEntity<?> createProduct(@Valid @ModelAttribute ProductRequestDTO productRequestDTO,
+			BindingResult bindingResult) throws IOException, Exception {
+		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
-			if(productRequestDTO.getMainImage().isEmpty())
-                errors.put("mainImage", "Main image is required");
+			if (productRequestDTO.getMainImage().isEmpty())
+				errors.put("mainImage", "Main image is required");
 			bindingResult.getFieldErrors().forEach(error -> {
 				errors.put(error.getField(), error.getDefaultMessage());
 			});
-			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
 		}
 		ProductResponseDTO product = productService.createProduct(productRequestDTO);
@@ -88,7 +90,17 @@ public class ProductController {
 	}
 
 	@PatchMapping("/{productId}")
-	public ResponseEntity<?> updateProduct(@PathVariable String productId, ProductRequestUpdateDTO productRequestUpdateDTO) {
+	public ResponseEntity<?> updateProduct(@PathVariable String productId,
+			@Valid @ModelAttribute ProductRequestUpdateDTO productRequestUpdateDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
+		}
 		ProductResponseDTO product = productService.updateProduct(productId, productRequestUpdateDTO);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product success",
 				HttpStatus.OK.value(), product);
@@ -127,8 +139,8 @@ public class ProductController {
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit,
 			@RequestParam(defaultValue = "priceChangeEffectiveDate") String sortField,
 			@RequestParam(defaultValue = "desc") String sortOder) {
-		PagedResponseDTO<PriceHistory> pagedResponseDTO = productService.getPriceHistoriesByProductId(productId, page, limit,
-				sortField, sortOder);
+		PagedResponseDTO<PriceHistory> pagedResponseDTO = productService.getPriceHistoriesByProductId(productId, page,
+				limit, sortField, sortOder);
 		ApiResponseDTO<PagedResponseDTO<PriceHistory>> apiResponseDTO = new ApiResponseDTO<>(
 				"Get price histories by product id success", HttpStatus.OK.value(), pagedResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
