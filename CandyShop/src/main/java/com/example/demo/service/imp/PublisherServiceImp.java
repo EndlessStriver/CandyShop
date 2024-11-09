@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.PublisherRequestDTO;
+import com.example.demo.dto.PublisherRequestUpdateDTO;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Publisher;
@@ -51,25 +52,21 @@ public class PublisherServiceImp implements PublisherService{
 
 	@Override
 	@Transactional
-	public Publisher updatePublisher(String publisherId, PublisherRequestDTO publisherRequestDTO) {
+	public Publisher updatePublisher(String publisherId, PublisherRequestUpdateDTO publisherRequestUpdateDTO) {
 		Publisher publisher = publisherRepository.findById(publisherId)
 				.orElseThrow(() -> new ResourceNotFoundException("Publisher not found"));
-		if (publisherRepository.existsByPublisherNameIgnoreCase(publisherRequestDTO.getPublisherName()))
-			throw new ResourceConflictException("publisherName", "Publisher name already exists");
-		if (publisherRepository.existsByPhoneNumber(publisherRequestDTO.getPhoneNumber()))
+		if (publisherRepository.existsByPhoneNumber(publisherRequestUpdateDTO.getPhoneNumber()))
 			throw new ResourceConflictException("phoneNumber", "Phone number already exists");
-		if (publisherRepository.existsByEmail(publisherRequestDTO.getEmail()))
+		if (publisherRepository.existsByEmail(publisherRequestUpdateDTO.getEmail()))
 			throw new ResourceConflictException("email", "Email already exists");
-		if(publisherRepository.existsByAddressIgnoreCase(publisherRequestDTO.getAddress()))
-			throw new ResourceConflictException("address", "Address already exists");
-		if (publisherRequestDTO.getPublisherName() != null)
-			publisher.setPublisherName(publisherRequestDTO.getPublisherName());
-		if (publisherRequestDTO.getPhoneNumber() != null)
-			publisher.setPhoneNumber(publisherRequestDTO.getPhoneNumber());
-		if (publisherRequestDTO.getAddress() != null)
-			publisher.setAddress(publisherRequestDTO.getAddress());
-		if (publisherRequestDTO.getEmail() != null)
-			publisher.setEmail(publisherRequestDTO.getEmail());
+		if (publisherRequestUpdateDTO.getPublisherName() != null)
+			publisher.setPublisherName(publisherRequestUpdateDTO.getPublisherName());
+		if (publisherRequestUpdateDTO.getPhoneNumber() != null)
+			publisher.setPhoneNumber(publisherRequestUpdateDTO.getPhoneNumber());
+		if (publisherRequestUpdateDTO.getAddress() != null)
+			publisher.setAddress(publisherRequestUpdateDTO.getAddress());
+		if (publisherRequestUpdateDTO.getEmail() != null)
+			publisher.setEmail(publisherRequestUpdateDTO.getEmail());
 		return publisherRepository.save(publisher);
 	}
 
