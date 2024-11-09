@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.ApiResponseErrorDTO;
+import com.example.demo.dto.ApiResponseNoDataDTO;
 import com.example.demo.dto.LoginRequestDTO;
 import com.example.demo.dto.LoginResponseDTO;
 import com.example.demo.dto.RegisterRequestDTO;
@@ -65,9 +66,17 @@ public class AuthController {
 	}
 
 	@PostMapping("/otp")
-	public ResponseEntity<?> sendOTP(@RequestBody SendOtpRequest email) throws Exception {
+	public ResponseEntity<?> sendOTP(@Valid @RequestBody SendOtpRequest email, BindingResult bindingResult) throws Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().stream().forEach(result -> {
+				errors.put(result.getField(), result.getDefaultMessage());
+			});
+			ApiResponseErrorDTO error = new ApiResponseErrorDTO("OTP Failed!", HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.badRequest().body(error);
+		}
 		authService.sendOTP(email);
-		return ResponseEntity.ok(new ApiResponseDTO<>("OTP sent!", HttpStatus.OK.value(), null));
+		return ResponseEntity.ok(new ApiResponseNoDataDTO("OTP sent!", HttpStatus.OK.value()));
 	}
 
 }

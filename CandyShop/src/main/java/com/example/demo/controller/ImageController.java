@@ -20,9 +20,9 @@ public class ImageController {
 		this.imageService = imageService;
 	}
 	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteImage(@PathVariable String id) throws Exception {
-		imageService.deleteImage(id);
+	@DeleteMapping("/{imageId}")
+	public ResponseEntity<?> deleteImage(@PathVariable String imageId) throws Exception {
+		imageService.deleteImage(imageId);
 		ApiResponseDTO<Void> response = new ApiResponseDTO<>("Image deleted successfully", HttpStatus.OK.value(), null);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}

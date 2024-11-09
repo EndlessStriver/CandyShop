@@ -36,9 +36,9 @@ public class ProductController {
 		this.productService = productService;
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getProductById(@PathVariable String id) {
-		ProductResponseDTO product = productService.getProductResponse(id);
+	@GetMapping("/{productId}")
+	public ResponseEntity<?> getProductById(@PathVariable String productId) {
+		ProductResponseDTO product = productService.getProductResponse(productId);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Get product success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
@@ -63,55 +63,55 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
 	}
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteProduct(@PathVariable String id) throws Exception {
-		productService.deleteProduct(id);
+	@DeleteMapping("/{productId}")
+	public ResponseEntity<?> deleteProduct(@PathVariable String productId) throws Exception {
+		productService.deleteProduct(productId);
 		ApiResponseDTO<Product> apiResponseDTO = new ApiResponseDTO<>("Delete product success", HttpStatus.OK.value(),
 				null);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
-	@PatchMapping("/{id}")
-	public ResponseEntity<?> updateProduct(@PathVariable String id, ProductRequestUpdateDTO productRequestUpdateDTO) {
-		ProductResponseDTO product = productService.updateProduct(id, productRequestUpdateDTO);
+	@PatchMapping("/{productId}")
+	public ResponseEntity<?> updateProduct(@PathVariable String productId, ProductRequestUpdateDTO productRequestUpdateDTO) {
+		ProductResponseDTO product = productService.updateProduct(productId, productRequestUpdateDTO);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
-	@PatchMapping("/{id}/main-image")
-	public ResponseEntity<?> updateProductMainImage(@PathVariable String id,
+	@PatchMapping("/{productId}/main-image")
+	public ResponseEntity<?> updateProductMainImage(@PathVariable String productId,
 			@RequestPart(value = "file") MultipartFile mainImage) throws IOException, Exception {
-		ProductResponseDTO product = productService.updateProductMainImage(id, mainImage);
+		ProductResponseDTO product = productService.updateProductMainImage(productId, mainImage);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product main image success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
-	@PatchMapping("/{id}/images")
-	public ResponseEntity<?> updateProductImages(@PathVariable String id,
+	@PatchMapping("/{productId}/images")
+	public ResponseEntity<?> updateProductImages(@PathVariable String productId,
 			@RequestPart(value = "files") MultipartFile[] images) throws IOException, Exception {
-		ProductResponseDTO product = productService.updateProductImages(id, images);
+		ProductResponseDTO product = productService.updateProductImages(productId, images);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product images success",
 				HttpStatus.OK.value(), product);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
 	@PostMapping("/{id}/price-histories")
-	public ResponseEntity<?> createPriceHistory(@PathVariable String id,
+	public ResponseEntity<?> createPriceHistory(@PathVariable String productId,
 			@RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO) {
-		PriceHistory priceHistory = productService.createPriceHistory(id, priceHistoryRequestDTO);
+		PriceHistory priceHistory = productService.createPriceHistory(productId, priceHistoryRequestDTO);
 		ApiResponseDTO<PriceHistory> apiResponseDTO = new ApiResponseDTO<>("Add price history success",
 				HttpStatus.CREATED.value(), priceHistory);
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
 	}
 
-	@GetMapping("/{id}/price-histories")
-	public ResponseEntity<?> getPriceHistoriesByProductId(@PathVariable String id,
+	@GetMapping("/{productId}/price-histories")
+	public ResponseEntity<?> getPriceHistoriesByProductId(@PathVariable String productId,
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit,
 			@RequestParam(defaultValue = "priceChangeEffectiveDate") String sortField,
 			@RequestParam(defaultValue = "desc") String sortOder) {
-		PagedResponseDTO<PriceHistory> pagedResponseDTO = productService.getPriceHistoriesByProductId(id, page, limit,
+		PagedResponseDTO<PriceHistory> pagedResponseDTO = productService.getPriceHistoriesByProductId(productId, page, limit,
 				sortField, sortOder);
 		ApiResponseDTO<PagedResponseDTO<PriceHistory>> apiResponseDTO = new ApiResponseDTO<>(
 				"Get price histories by product id success", HttpStatus.OK.value(), pagedResponseDTO);
