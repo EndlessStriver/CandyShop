@@ -1,13 +1,16 @@
 package com.example.demo.controller;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,13 +25,15 @@ import com.example.demo.model.Ward;
 import com.example.demo.service.DistrictService;
 import com.example.demo.service.WardService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/districts")
 public class DistrictController {
 
 	private DistrictService districtService;
 	private WardService wardService;
-	
+
 	public DistrictController(DistrictService districtService, WardService wardService) {
 		this.districtService = districtService;
 		this.wardService = wardService;
@@ -55,8 +60,17 @@ public class DistrictController {
 
 	@PostMapping("/{idProvince}")
 	public ResponseEntity<?> createDistrict(@PathVariable String idProvince,
-			@RequestBody DistrictRequestDTO districtRequestDTO) throws ResourceConflictException, Exception {
-		System.out.println("idProvince: " + idProvince);
+			@Valid @RequestBody DistrictRequestDTO districtRequestDTO, BindingResult bindingResult)
+			throws ResourceConflictException, Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<>();
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.badRequest().body(response);
+		}
 		District district = districtService.createDistrict(idProvince, districtRequestDTO);
 		ApiResponseDTO<District> response = new ApiResponseDTO<>("Create district successfully",
 				HttpStatus.CREATED.value(), district);
@@ -65,7 +79,16 @@ public class DistrictController {
 
 	@PatchMapping("/{idDistrict}")
 	public ResponseEntity<?> updateDistrict(@PathVariable String idDistrict,
-			@RequestBody DistrictRequestDTO districtRequestDTO) throws Exception {
+			@Valid @RequestBody DistrictRequestDTO districtRequestDTO, BindingResult bindingResult) throws Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<>();
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.badRequest().body(response);
+		}
 		District district = districtService.updateDistrict(idDistrict, districtRequestDTO);
 		ApiResponseDTO<District> response = new ApiResponseDTO<>("Update district successfully", HttpStatus.OK.value(),
 				district);

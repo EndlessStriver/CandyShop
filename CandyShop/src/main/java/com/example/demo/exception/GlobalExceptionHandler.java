@@ -38,9 +38,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ResourceConflictException.class)
 	public ResponseEntity<Map<String, Object>> resoureConflicException(ResourceConflictException ex){
 		Map<String, Object> errors = new LinkedHashMap<String, Object>();
-        errors.put("status", HttpStatus.CONFLICT.value());
-        errors.put("message", ex.getMessage());
-        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.CONFLICT);
+		errors.put(ex.getField(), ex.getMessage());
+		Map<String, Object> response = new LinkedHashMap<String, Object>();
+		response.put("status", HttpStatus.CONFLICT.value());
+		response.put("message", "Conflict with existing data");
+		response.put("errors", errors);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CONFLICT);
 	}
 	
 	@ExceptionHandler(BadRequestException.class)

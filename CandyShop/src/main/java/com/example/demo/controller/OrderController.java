@@ -1,7 +1,11 @@
-package com.example.demo.controller;
+ package com.example.demo.controller;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +21,8 @@ import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Order;
 import com.example.demo.service.OrderService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -47,8 +53,16 @@ public class OrderController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> createOrder(@RequestBody OrderRequestDTO orderRequestDTO)
+	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
+		if(bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
 		Order order = orderService.createOrder(orderRequestDTO);
 		ApiResponseDTO<Order> response = new ApiResponseDTO<>("Order created successfully", HttpStatus.CREATED.value(),
 				order);
