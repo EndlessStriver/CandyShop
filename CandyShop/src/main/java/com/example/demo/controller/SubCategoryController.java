@@ -1,7 +1,12 @@
 package com.example.demo.controller;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
+import com.example.demo.dto.ApiResponseErrorDTO;
 import com.example.demo.dto.SubCategoryRequestDTO;
 import com.example.demo.model.SubCategory;
 import com.example.demo.service.SubCategoryService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/subcategories")
@@ -28,7 +36,13 @@ public class SubCategoryController {
 
 	@PostMapping("/{categoryId}")
 	public ResponseEntity<?> createSubCategory(@PathVariable String categoryId,
-			@RequestBody SubCategoryRequestDTO categoryRequestDTO) {
+			@Valid @RequestBody SubCategoryRequestDTO categoryRequestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		SubCategory subCategory = subCategoryService.createSubCategory(categoryId, categoryRequestDTO);
 		ApiResponseDTO<SubCategory> response = new ApiResponseDTO<>("SubCategory created successfully",
 				HttpStatus.CREATED.value(), subCategory);
@@ -37,7 +51,13 @@ public class SubCategoryController {
 
 	@PatchMapping("/{subCategoryId}")
 	public ResponseEntity<?> updateSubCategory(@PathVariable String subCategoryId,
-			@RequestBody SubCategoryRequestDTO subCategoryRequestDTO) {
+			@Valid @RequestBody SubCategoryRequestDTO subCategoryRequestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		SubCategory subCategory = subCategoryService.updateSubCategory(subCategoryId, subCategoryRequestDTO);
 		ApiResponseDTO<SubCategory> response = new ApiResponseDTO<>("SubCategory updated successfully",
 				HttpStatus.OK.value(), subCategory);
