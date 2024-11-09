@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.OrderPageResponseDTO;
 import com.example.demo.dto.OrderRequestDTO;
+import com.example.demo.dto.OrderRequestUpdateDTO;
 import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Order;
@@ -86,9 +87,17 @@ public class OrderController {
 	}
 
 	@PostMapping("/{orderId}")
-	public ResponseEntity<?> updateOrder(@PathVariable String orderId, @RequestBody OrderRequestDTO orderRequestDTO)
+	public ResponseEntity<?> updateOrder(@PathVariable String orderId, @Valid @RequestBody OrderRequestUpdateDTO orderRequestUpdateDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
-		Order order = orderService.updateOrder(orderId, orderRequestDTO);
+		if(bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+		Order order = orderService.updateOrder(orderId, orderRequestUpdateDTO);
 		ApiResponseDTO<Order> response = new ApiResponseDTO<>("Order updated successfully", HttpStatus.OK.value(),
 				order);
 		return ResponseEntity.ok(response);

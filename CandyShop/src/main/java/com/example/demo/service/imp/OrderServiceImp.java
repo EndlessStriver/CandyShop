@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.OrderPageResponseDTO;
 import com.example.demo.dto.OrderRequestDTO;
+import com.example.demo.dto.OrderRequestUpdateDTO;
 import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -111,23 +112,23 @@ public class OrderServiceImp implements OrderService {
 	}
 
 	@Override
-	public Order updateOrder(String orderId, OrderRequestDTO orderRequestDTO) throws ResourceNotFoundException, BadRequestException, Exception {
+	public Order updateOrder(String orderId, OrderRequestUpdateDTO orderRequestUpdateDTO) throws ResourceNotFoundException, BadRequestException, Exception {
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("Order can not be updated");
-		if (orderRequestDTO.getNote() != null) order.setNote(orderId);
-		if (orderRequestDTO.getAddress() != null) order.setAddress(orderRequestDTO.getAddress());
-		if (orderRequestDTO.getCustomerName() != null) order.setCustomerName(orderRequestDTO.getCustomerName());
-		if (orderRequestDTO.getPhoneNumber() != null) order.setPhoneNumber(orderRequestDTO.getPhoneNumber());
-		if (orderRequestDTO.getProvinceId() != null) {
-			Province province = provinceService.getProvince(orderRequestDTO.getProvinceId());
+		if (orderRequestUpdateDTO.getNote() != null) order.setNote(orderRequestUpdateDTO.getNote());
+		if (orderRequestUpdateDTO.getAddress() != null) order.setAddress(orderRequestUpdateDTO.getAddress());
+		if (orderRequestUpdateDTO.getCustomerName() != null) order.setCustomerName(orderRequestUpdateDTO.getCustomerName());
+		if (orderRequestUpdateDTO.getPhoneNumber() != null) order.setPhoneNumber(orderRequestUpdateDTO.getPhoneNumber());
+		if (orderRequestUpdateDTO.getProvinceId() != null) {
+			Province province = provinceService.getProvince(orderRequestUpdateDTO.getProvinceId());
 			order.setProvince(province);
 		}
-		if (orderRequestDTO.getDistrictId() != null) {
-			District district = districtService.getDistrict(orderRequestDTO.getDistrictId());
+		if (orderRequestUpdateDTO.getDistrictId() != null) {
+			District district = districtService.getDistrict(orderRequestUpdateDTO.getDistrictId());
 			order.setDistrict(district);
 		}
-		if (orderRequestDTO.getWardId() != null) {
-			Ward ward = wardService.getWard(orderRequestDTO.getWardId());
+		if (orderRequestUpdateDTO.getWardId() != null) {
+			Ward ward = wardService.getWard(orderRequestUpdateDTO.getWardId());
 			order.setWard(ward);
 		}
 		return orderRepository.save(order);
