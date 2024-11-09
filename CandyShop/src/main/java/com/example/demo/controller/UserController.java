@@ -1,9 +1,13 @@
 package com.example.demo.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,7 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.AddressRequestDTO;
+import com.example.demo.dto.AddressRequestUpdateDTO;
 import com.example.demo.dto.ApiResponseDTO;
+import com.example.demo.dto.ApiResponseErrorDTO;
+import com.example.demo.dto.ApiResponseNoDataDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.OrderPageResponseDTO;
@@ -30,6 +37,8 @@ import com.example.demo.model.User;
 import com.example.demo.service.OrderService;
 import com.example.demo.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -41,7 +50,7 @@ public class UserController {
 		this.userService = userService;
 		this.orderService = orderService;
 	}
-	
+
 	@GetMapping("/{userId}/addresses/{addressId}")
 	public ResponseEntity<?> getAddress(@PathVariable String userId, @PathVariable String addressId) throws Exception {
 		Address address = userService.getAddress(userId, addressId);
@@ -60,13 +69,15 @@ public class UserController {
 
 	@GetMapping("/{userId}/orders")
 	public ResponseEntity<?> getOrders(@PathVariable String userId, @RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "0") int limit, @RequestParam(defaultValue = "createdAt") String sortField, @RequestParam(defaultValue = "asc") String sortOrder)
-			throws Exception {
-		PagedResponseDTO<OrderPageResponseDTO> pagedResponseDTO = orderService.getOrdersByUserId(userId, page, limit, sortField, sortOrder);
-		ApiResponseDTO<PagedResponseDTO<OrderPageResponseDTO>> response = new ApiResponseDTO<>("Orders retrieved successfully", HttpStatus.OK.value(), pagedResponseDTO);
+			@RequestParam(defaultValue = "0") int limit, @RequestParam(defaultValue = "createdAt") String sortField,
+			@RequestParam(defaultValue = "asc") String sortOrder) throws Exception {
+		PagedResponseDTO<OrderPageResponseDTO> pagedResponseDTO = orderService.getOrdersByUserId(userId, page, limit,
+				sortField, sortOrder);
+		ApiResponseDTO<PagedResponseDTO<OrderPageResponseDTO>> response = new ApiResponseDTO<>(
+				"Orders retrieved successfully", HttpStatus.OK.value(), pagedResponseDTO);
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/{userId}")
 	public ResponseEntity<?> getUser(@PathVariable String userId) throws ResourceNotFoundException {
 		User user = userService.getUserById(userId);
@@ -77,7 +88,15 @@ public class UserController {
 
 	@PatchMapping("/{userId}")
 	public ResponseEntity<?> updateUser(@PathVariable String userId,
-			@RequestBody UserProfileRequestDTO userProfileRequestDTO) throws ResourceNotFoundException, Exception {
+			@Valid @RequestBody UserProfileRequestDTO userProfileRequestDTO, BindingResult bindingResult)
+			throws ResourceNotFoundException, Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		User user = userService.updateUser(userId, userProfileRequestDTO);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("User updated successfully", HttpStatus.OK.value(), user);
 		return ResponseEntity.ok(response);
@@ -85,11 +104,18 @@ public class UserController {
 
 	@PatchMapping("/{userId}/password")
 	public ResponseEntity<?> changePassword(@PathVariable String userId,
-			@RequestBody ChangePasswordRequestDTO changePasswordRequestDTO)
+			@Valid @RequestBody ChangePasswordRequestDTO changePasswordRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		userService.changePassword(userId, changePasswordRequestDTO);
-		ApiResponseDTO<String> response = new ApiResponseDTO<>("Password changed successfully", HttpStatus.OK.value(),
-				null);
+		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Password changed successfully",
+				HttpStatus.OK.value());
 		return ResponseEntity.ok(response);
 	}
 
@@ -104,15 +130,30 @@ public class UserController {
 
 	@PatchMapping("/{userId}/email")
 	public ResponseEntity<?> changeEmail(@PathVariable String userId,
-			@RequestBody ChangeEmailRequestDTO changeEmailRequestDTO) throws Exception {
+			@Valid @RequestBody ChangeEmailRequestDTO changeEmailRequestDTO, BindingResult bindingResult)
+			throws Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		User user = userService.changeEmail(userId, changeEmailRequestDTO);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("Email changed successfully", HttpStatus.OK.value(), user);
 		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/{userId}/addresses")
-	public ResponseEntity<?> createAddress(@PathVariable String userId, @RequestBody AddressRequestDTO address)
-			throws Exception {
+	public ResponseEntity<?> createAddress(@PathVariable String userId, @Valid @RequestBody AddressRequestDTO address,
+			BindingResult bindingResult) throws Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		Address newAddress = userService.createAddress(userId, address);
 		ApiResponseDTO<Address> response = new ApiResponseDTO<>("Address created successfully",
 				HttpStatus.CREATED.value(), newAddress);
@@ -121,8 +162,16 @@ public class UserController {
 
 	@PatchMapping("/{userId}/addresses/{addressId}")
 	public ResponseEntity<?> updateAddress(@PathVariable String userId, @PathVariable String addressId,
-			@RequestBody AddressRequestDTO address) throws Exception {
-		Address updatedAddress = userService.updateAddress(userId, addressId, address);
+			@Valid @RequestBody AddressRequestUpdateDTO addressRequestUpdateDTO, BindingResult bindingResult)
+			throws Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
+		Address updatedAddress = userService.updateAddress(userId, addressId, addressRequestUpdateDTO);
 		ApiResponseDTO<Address> response = new ApiResponseDTO<>("Address updated successfully", HttpStatus.OK.value(),
 				updatedAddress);
 		return ResponseEntity.ok(response);
@@ -138,8 +187,15 @@ public class UserController {
 	}
 
 	@PostMapping("/{userId}/verify")
-	public ResponseEntity<?> verifyUser(@PathVariable String userId, @RequestBody VerifyUserRequest verifyUserRequest)
-			throws Exception {
+	public ResponseEntity<?> verifyUser(@PathVariable String userId,
+			@Valid @RequestBody VerifyUserRequest verifyUserRequest, BindingResult bindingResult) throws Exception {
+		if (bindingResult.hasErrors()) {
+			Map<String, String> errors = bindingResult.getFieldErrors().stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
+		}
 		User user = userService.verifyUser(userId, verifyUserRequest);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("User verified successfully", HttpStatus.OK.value(), user);
 		return ResponseEntity.ok(response);

@@ -46,8 +46,8 @@ public class RegisterRequestDTO {
 	private String gender;
 	
 	@NotBlank(message = "Password is required")
-	@Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
-	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$", message = "Password must contain at least one digit, one uppercase letter, one lowercase letter, one special character")
+	@Size(min = 8, message = "Password must be at least 8 characters long")
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "Password must contain at least one digit, one uppercase letter, one lowercase letter, one special character")
 	private String password;
 	
 	@NotNull(message = "Birth day is required")

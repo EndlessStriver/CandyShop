@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.AddressRequestDTO;
+import com.example.demo.dto.AddressRequestUpdateDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
@@ -30,7 +31,7 @@ public interface UserService {
 	
 	public Address createAddress(String userId, AddressRequestDTO address) throws Exception, ResourceNotFoundException;
 	
-	public Address updateAddress(String userId, String addressId, AddressRequestDTO address) throws Exception, ResourceNotFoundException;
+	public Address updateAddress(String userId, String addressId, AddressRequestUpdateDTO addressRequestUpdateDTO) throws Exception, ResourceNotFoundException;
 	
 	public void deleteAddress(String userId, String addressId) throws Exception, ResourceNotFoundException;
 	

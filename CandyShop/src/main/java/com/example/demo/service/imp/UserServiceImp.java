@@ -10,10 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.AddressRequestDTO;
+import com.example.demo.dto.AddressRequestUpdateDTO;
 import com.example.demo.dto.ChangeEmailRequestDTO;
 import com.example.demo.dto.ChangePasswordRequestDTO;
 import com.example.demo.dto.UserProfileRequestDTO;
 import com.example.demo.dto.VerifyUserRequest;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
@@ -66,9 +68,9 @@ public class UserServiceImp implements UserService {
 			throws Exception, ResourceNotFoundException {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-		
+
 		if (userRepository.existsByPhoneNumber(profileRequestDTO.getPhoneNumber()))
-            throw new ResourceConflictException("phoneNumber", "Phone number already");
+			throw new ResourceConflictException("phoneNumber", "Phone number already");
 
 		String firstName = profileRequestDTO.getFirstName();
 		String lastName = profileRequestDTO.getLastName();
@@ -107,6 +109,8 @@ public class UserServiceImp implements UserService {
 	@Override
 	@Transactional
 	public User uploadAvatar(String userId, MultipartFile multipartFile) throws Exception {
+		if (multipartFile == null)
+			throw new BadRequestException("avatar", "Avatar is required");
 		String avatarName = null;
 		try {
 			User user = userRepository.findById(userId)
@@ -168,25 +172,37 @@ public class UserServiceImp implements UserService {
 
 	@Override
 	@Transactional
-	public Address updateAddress(String userId, String addressId, AddressRequestDTO address)
+	public Address updateAddress(String userId, String addressId, AddressRequestUpdateDTO address)
 			throws Exception, ResourceNotFoundException {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-		Province province = provinceRepository.findById(address.getProvinceId())
-				.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
-		District district = districtRepository.findById(address.getDistrictId())
-				.orElseThrow(() -> new ResourceNotFoundException("District not found"));
-		Ward ward = wardRepository.findById(address.getWardId())
-				.orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
+		Province province = null;
+		if (address.getProvinceId() != null)
+			province = provinceRepository.findById(address.getProvinceId())
+					.orElseThrow(() -> new ResourceNotFoundException("Province not found"));
+		District district = null;
+		if (address.getDistrictId() != null)
+			district = districtRepository.findById(address.getDistrictId())
+					.orElseThrow(() -> new ResourceNotFoundException("District not found"));
+		Ward ward = null;
+		if (address.getWardId() != null)
+			ward = wardRepository.findById(address.getWardId())
+					.orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
 		Address oldAddress = addressRepository.findById(addressId)
 				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 		if (!oldAddress.getUser().getUserId().equals(user.getUserId()))
 			throw new UnauthorizedException("Unauthorized");
-		oldAddress.setAddress(address.getAddress());
-		oldAddress.setCustomerName(address.getCustomerName());
-		oldAddress.setPhoneNumber(address.getPhoneNumber());
-		oldAddress.setProvince(province);
-		oldAddress.setDistrict(district);
-		oldAddress.setWard(ward);
+		if (address.getAddress() != null)
+			oldAddress.setAddress(address.getAddress());
+		if (address.getCustomerName() != null)
+			oldAddress.setCustomerName(address.getCustomerName());
+		if (address.getPhoneNumber() != null)
+			oldAddress.setPhoneNumber(address.getPhoneNumber());
+		if (address.getProvinceId() != null)
+			oldAddress.setProvince(province);
+		if (address.getDistrictId() != null)
+			oldAddress.setDistrict(district);
+		if (address.getWardId() != null)
+			oldAddress.setWard(ward);
 		return addressRepository.save(oldAddress);
 	}
 
