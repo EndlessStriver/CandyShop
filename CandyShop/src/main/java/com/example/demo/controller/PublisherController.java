@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.ApiResponseErrorDTO;
+import com.example.demo.dto.ApiResponseNoDataDTO;
 import com.example.demo.dto.PagedResponseDTO;
 import com.example.demo.dto.PublisherRequestDTO;
 import com.example.demo.dto.PublisherRequestUpdateDTO;
@@ -31,6 +34,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/publishers")
 public class PublisherController {
 
+	private static final Logger logger = LoggerFactory.getLogger(PublisherController.class);
 	private PublisherService publisherService;
 
 	public PublisherController(PublisherService publisherService) {
@@ -57,39 +61,50 @@ public class PublisherController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> createPublisher(@Valid @RequestBody PublisherRequestDTO publisherRequestDTO, BindingResult bindingResult) {
+	public ResponseEntity<?> createPublisher(@Valid @RequestBody PublisherRequestDTO publisherRequestDTO,
+			BindingResult bindingResult) {
+		logger.info("Creating publisher: {}", publisherRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Publisher publisher = publisherService.createPublisher(publisherRequestDTO);
 		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher created successfully",
 				HttpStatus.CREATED.value(), publisher);
+		logger.info("Publisher created: {}", publisher);
 		return ResponseEntity.ok(response);
 	}
 
 	@PatchMapping("/{publisherId}")
 	public ResponseEntity<?> updatePublisher(@PathVariable String publisherId,
 			@Valid @RequestBody PublisherRequestUpdateDTO publisherRequestUpdateDTO, BindingResult bindingResult) {
+		logger.info("Updating publisher with ID: {}, {}", publisherId, publisherRequestUpdateDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
+			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Publisher publisher = publisherService.updatePublisher(publisherId, publisherRequestUpdateDTO);
 		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher updated successfully",
 				HttpStatus.OK.value(), publisher);
+		logger.info("Publisher updated: {}", publisher);
 		return ResponseEntity.ok(response);
 	}
 
 	@DeleteMapping("/{publisherId}")
 	public ResponseEntity<?> deletePublisher(@PathVariable String publisherId) {
+		logger.info("Deleting publisher with ID: {}", publisherId);
 		publisherService.deletePublisher(publisherId);
-		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher deleted successfully",
-				HttpStatus.OK.value(), null);
+		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Publisher deleted successfully",
+				HttpStatus.OK.value());
+		logger.info("Publisher deleted with ID: {}", publisherId);
 		return ResponseEntity.ok(response);
 	}
 

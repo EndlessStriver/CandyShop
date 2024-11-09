@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.ApiResponseDTO;
 import com.example.demo.dto.ApiResponseErrorDTO;
+import com.example.demo.dto.ApiResponseNoDataDTO;
 import com.example.demo.dto.CategoryRequestDTO;
 import com.example.demo.model.Category;
 import com.example.demo.model.SubCategory;
@@ -28,72 +31,90 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 	private CategoryService categoryService;
-	
+
 	public CategoryController(CategoryService categoryService) {
 		this.categoryService = categoryService;
 	}
-	
+
 	@GetMapping
 	public ResponseEntity<?> getCategories() {
 		List<Category> categories = categoryService.getAllCategories();
-		ApiResponseDTO<List<Category>> response = new ApiResponseDTO<>("Categories retrieved successfully", HttpStatus.OK.value(), categories);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+		ApiResponseDTO<List<Category>> response = new ApiResponseDTO<>("Categories retrieved successfully",
+				HttpStatus.OK.value(), categories);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+
 	@GetMapping("/{categoryId}")
 	public ResponseEntity<?> getCategory(@PathVariable String categoryId) {
-        Category category = categoryService.getCategory(categoryId);
-        ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category retrieved successfully", HttpStatus.OK.value(), category);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+		Category category = categoryService.getCategory(categoryId);
+		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category retrieved successfully",
+				HttpStatus.OK.value(), category);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+
 	@GetMapping("/{categoryId}/subcategories")
 	public ResponseEntity<?> getSubcategoriesByCategoryId(@PathVariable String categoryId) {
 		Category category = categoryService.getCategory(categoryId);
 		List<SubCategory> categories = category.getSubCategories();
-		ApiResponseDTO<List<SubCategory>> response = new ApiResponseDTO<>("SubCategories retrieved successfully", HttpStatus.OK.value(), categories);
+		ApiResponseDTO<List<SubCategory>> response = new ApiResponseDTO<>("SubCategories retrieved successfully",
+				HttpStatus.OK.value(), categories);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+
 	@PatchMapping("/{categoryId}")
-	public ResponseEntity<?> updateCategory(@PathVariable String categoryId, @Valid @RequestBody CategoryRequestDTO categoryName, BindingResult bindingResult) {
+	public ResponseEntity<?> updateCategory(@PathVariable String categoryId,
+			@Valid @RequestBody CategoryRequestDTO categoryName, BindingResult bindingResult) {
+		logger.info("Update category by id: " + categoryId);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().stream().forEach(result -> {
 				errors.put(result.getField(), result.getDefaultMessage());
 			});
-			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Update Category Failed!" , HttpStatus.BAD_REQUEST.value(), errors);
+			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Update Category Failed!",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			logger.error(
+					"Update Category Failed With Category Id: " + categoryId + " and category update detail: " + categoryName);
 			return ResponseEntity.badRequest().body(error);
 		}
 		Category category = categoryService.updateCategory(categoryId, categoryName);
 		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category updated successfully", HttpStatus.OK.value(),
 				category);
+		logger.info("Update category successfully with category id: " + categoryId + " and category update detail: " + categoryName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+
 	@PostMapping
-	public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequestDTO categoryName, BindingResult bindingResult) {
+	public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequestDTO categoryName,
+			BindingResult bindingResult) {
+		logger.info("Create category with information: " + categoryName);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().stream().forEach(result -> {
 				errors.put(result.getField(), result.getDefaultMessage());
 			});
-			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Create Category Failed!" , HttpStatus.BAD_REQUEST.value(), errors);
+			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Create Category Failed!",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			logger.error("Create category failed with information: " + categoryName);
 			return ResponseEntity.badRequest().body(error);
 		}
 		Category category = categoryService.createCategory(categoryName);
-		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category created successfully", HttpStatus.CREATED.value(), category);
+		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category created successfully",
+				HttpStatus.CREATED.value(), category);
+		logger.info("Category created successfully with information: " + categoryName);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-	
+
 	@DeleteMapping("/{categoryId}")
 	public ResponseEntity<?> deleteCategory(@PathVariable String categoryId) {
+		logger.info("Delete category by id: " + categoryId);
 		categoryService.deleteCategory(categoryId);
-		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category deleted successfully", HttpStatus.OK.value(),
-				null);
+		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Category deleted successfully",
+				HttpStatus.OK.value());
+		logger.info("Category deleted successfully with category id: " + categoryId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+
 }
