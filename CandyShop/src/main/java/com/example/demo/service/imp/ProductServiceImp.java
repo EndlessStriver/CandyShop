@@ -166,6 +166,9 @@ public class ProductServiceImp implements ProductService {
 	@Override
 	@Transactional
 	public ProductResponseDTO updateProductMainImage(String id, MultipartFile mainImage) throws Exception {
+		if(mainImage == null) {
+			throw new BadRequestException("mainImage", "Main image is required");
+		}
 		String avatarName = null;
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -188,11 +191,13 @@ public class ProductServiceImp implements ProductService {
 	@Override
 	@Transactional
 	public ProductResponseDTO updateProductImages(String id, MultipartFile[] images) throws IOException, Exception {
+		if (images == null || images.length == 0) {
+			throw new BadRequestException("images", "Images are required");
+		}
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 		if (product.getImages().size() + images.length > 5)
-			throw new BadRequestException("Maximum 5 images are allowed");
-
+			throw new BadRequestException("images", "Maximum 5 images are allowed");
 		List<Image> imageList = new ArrayList<Image>();
 		try {
 			for (MultipartFile image : images) {

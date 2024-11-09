@@ -63,7 +63,7 @@ public class OrderServiceImp implements OrderService {
 		User user = null;
 		if (orderRequestDTO.getUserId() != null) {
 			user = userService.getUserById(orderRequestDTO.getUserId());
-			if (user.getStatus() != UserStatus.ACTIVE) throw new BadRequestException("Account is not active to create order");
+			if (user.getStatus() != UserStatus.ACTIVE) throw new BadRequestException("status", "Account is not active to create order");
 		}
 			
 		Province province = provinceService.getProvince(orderRequestDTO.getProvinceId());
@@ -106,7 +106,7 @@ public class OrderServiceImp implements OrderService {
 	@Override
 	public Order cancelOrder(String orderId) throws BadRequestException {
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("Order can not be canceled");
+		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("status", "Order can not be canceled");
 		order.setStatus(OrderStatus.CANCELLED);
 		return orderRepository.save(order);
 	}
@@ -114,7 +114,7 @@ public class OrderServiceImp implements OrderService {
 	@Override
 	public Order updateOrder(String orderId, OrderRequestUpdateDTO orderRequestUpdateDTO) throws ResourceNotFoundException, BadRequestException, Exception {
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("Order can not be updated");
+		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("status", "Order can not be updated");
 		if (orderRequestUpdateDTO.getNote() != null) order.setNote(orderRequestUpdateDTO.getNote());
 		if (orderRequestUpdateDTO.getAddress() != null) order.setAddress(orderRequestUpdateDTO.getAddress());
 		if (orderRequestUpdateDTO.getCustomerName() != null) order.setCustomerName(orderRequestUpdateDTO.getCustomerName());
@@ -195,7 +195,7 @@ public class OrderServiceImp implements OrderService {
 	@Override
 	public Order confirmOrder(String orderId) throws BadRequestException {
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("Order can not be confirmed");
+		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("status", "Order can not be confirmed");
 		order.setStatus(OrderStatus.PENDING_PAYMENT);
 		return orderRepository.save(order);
 	}

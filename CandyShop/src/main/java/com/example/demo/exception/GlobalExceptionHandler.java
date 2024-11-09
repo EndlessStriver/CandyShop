@@ -49,9 +49,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<Map<String, Object>> badRequestException(BadRequestException ex){
 		Map<String, Object> errors = new LinkedHashMap<String, Object>();
-        errors.put("status", HttpStatus.BAD_REQUEST.value());
-        errors.put("message", ex.getMessage());
-        return new ResponseEntity<Map<String, Object>>(errors, HttpStatus.BAD_REQUEST);
+		errors.put(ex.getField(), ex.getMessage());
+		Map<String, Object> response = new LinkedHashMap<String, Object>();
+		response.put("status", HttpStatus.BAD_REQUEST.value());
+		response.put("message", "Bad Request");
+		response.put("errors", errors);
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 	}
 	
 }

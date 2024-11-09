@@ -127,7 +127,16 @@ public class ProductController {
 
 	@PostMapping("/{productId}/price-histories")
 	public ResponseEntity<?> createPriceHistory(@PathVariable String productId,
-			@RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO) {
+			@Valid @RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<String, Object>();
+			bindingResult.getFieldErrors().forEach(error -> {
+				errors.put(error.getField(), error.getDefaultMessage());
+			});
+			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed",
+					HttpStatus.BAD_REQUEST.value(), errors);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
+		}
 		PriceHistory priceHistory = productService.createPriceHistory(productId, priceHistoryRequestDTO);
 		ApiResponseDTO<PriceHistory> apiResponseDTO = new ApiResponseDTO<>("Add price history success",
 				HttpStatus.CREATED.value(), priceHistory);
