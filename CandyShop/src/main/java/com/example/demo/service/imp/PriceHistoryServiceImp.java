@@ -28,7 +28,7 @@ public class PriceHistoryServiceImp implements PriceHistoryService {
 		PriceHistory priceHistory = priceHistoryRepository.findById(priceHistoryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Price history not found"));
 		if (priceHistory.getPriceChangeEffectiveDate().isBefore(LocalDateTime.now()))
-			throw new ResourceConflictException("priceChangeEffectiveDate", "Price change effective date must be after the current effective date");
+			throw new ResourceConflictException("priceChangeEffectiveDate", "Cannot update price history with effective date before the current");
 		if (priceHistoryRequestDTO.getNewPrice() != 0)
 			priceHistory.setNewPrice(priceHistoryRequestDTO.getNewPrice());
 		if (priceHistoryRequestDTO.getPriceChangeReason() != null)
@@ -51,7 +51,7 @@ public class PriceHistoryServiceImp implements PriceHistoryService {
 		PriceHistory priceHistory = priceHistoryRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Price history not found"));
 		if (priceHistory.getPriceChangeEffectiveDate().isBefore(LocalDateTime.now()))
-			throw new ResourceConflictException("priceChangeEffectiveDate", "Price change effective date must be after the current effective date");
+			throw new ResourceConflictException("priceChangeEffectiveDate", "Cannot delete price history with effective date before the current");
 		priceHistoryRepository.delete(priceHistory);
 	}
 

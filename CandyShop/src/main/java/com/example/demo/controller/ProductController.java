@@ -97,7 +97,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
 
-	@PostMapping("/{id}/price-histories")
+	@PostMapping("/{productId}/price-histories")
 	public ResponseEntity<?> createPriceHistory(@PathVariable String productId,
 			@RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO) {
 		PriceHistory priceHistory = productService.createPriceHistory(productId, priceHistoryRequestDTO);
