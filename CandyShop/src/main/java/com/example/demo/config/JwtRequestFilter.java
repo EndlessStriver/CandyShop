@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.exception.AuthenticationException;
 import com.example.demo.service.MyUserDetailsService;
 import com.example.demo.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 				jwt = authorizationHeader.substring(7);
 				username = jwtUtil.extractUsername(jwt);
 			} else {
-				throw new UnauthorizedException("Invalid Token or Token expired");
+				throw new AuthenticationException("Invalid Token or Token expired");
 			}
 
 			if (username != null) {
@@ -66,10 +66,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 				} else {
-					throw new UnauthorizedException("Invalid Token or Token expired");
+					throw new AuthenticationException("Invalid Token or Token expired");
 				}
 			} else {
-				throw new UnauthorizedException("Invalid Token or Token expired");
+				throw new AuthenticationException("Invalid Token or Token expired");
 			}
 			filterChain.doFilter(request, response);
 		} catch (Exception e) {

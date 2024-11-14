@@ -18,7 +18,7 @@ import com.example.demo.dto.VerifyUserRequest;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.exception.AuthenticationException;
 import com.example.demo.model.Address;
 import com.example.demo.model.District;
 import com.example.demo.model.Province;
@@ -101,7 +101,7 @@ public class UserServiceImp implements UserService {
 		String newPassword = changePasswordRequestDTO.getNewPassword();
 
 		if (!bycryptPasswordEncoder.matches(oldPassword, user.getPassword()))
-			throw new UnauthorizedException("Old password is incorrect");
+			throw new AuthenticationException("Old password is incorrect");
 		user.setPassword(bycryptPasswordEncoder.encode(newPassword));
 		userRepository.save(user);
 	}
@@ -138,12 +138,12 @@ public class UserServiceImp implements UserService {
 		if (userRepository.existsByEmail(changeEmailRequestDTO.getNewEmail()))
 			throw new ResourceConflictException("email", "Email already exists");
 		if (!bycryptPasswordEncoder.matches(changeEmailRequestDTO.getPassword(), user.getPassword()))
-			throw new UnauthorizedException("Password is incorrect");
+			throw new AuthenticationException("Password is incorrect");
 		Object otp = redisService.get(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
 		if (otp == null)
-			throw new UnauthorizedException("OTP is incorrect or expired");
+			throw new AuthenticationException("OTP is incorrect or expired");
 		if (!otp.equals(changeEmailRequestDTO.getOtp()))
-			throw new UnauthorizedException("OTP is incorrect or expired");
+			throw new AuthenticationException("OTP is incorrect or expired");
 		redisService.delete(String.format("otp?email=%s", changeEmailRequestDTO.getNewEmail()));
 		user.setEmail(changeEmailRequestDTO.getNewEmail());
 		return userRepository.save(user);
@@ -190,7 +190,7 @@ public class UserServiceImp implements UserService {
 		Address oldAddress = addressRepository.findById(addressId)
 				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 		if (!oldAddress.getUser().getUserId().equals(user.getUserId()))
-			throw new UnauthorizedException("Unauthorized");
+			throw new AuthenticationException("Unauthorized");
 		if (address.getAddress() != null)
 			oldAddress.setAddress(address.getAddress());
 		if (address.getCustomerName() != null)
@@ -213,7 +213,7 @@ public class UserServiceImp implements UserService {
 		Address address = addressRepository.findById(addressId)
 				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 		if (!address.getUser().getUserId().equals(user.getUserId()))
-			throw new UnauthorizedException("Unauthorized");
+			throw new AuthenticationException("Unauthorized");
 		addressRepository.delete(address);
 	}
 
@@ -223,7 +223,7 @@ public class UserServiceImp implements UserService {
 		Address address = addressRepository.findById(addressId)
 				.orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 		if (!address.getUser().getUserId().equals(user.getUserId()))
-			throw new UnauthorizedException("Unauthorized");
+			throw new AuthenticationException("Unauthorized");
 		return address;
 	}
 
@@ -240,11 +240,11 @@ public class UserServiceImp implements UserService {
 		String email = user.getEmail();
 		Object savedOTP = redisService.get(String.format("otp?email=%s", email));
 		if (savedOTP == null || !savedOTP.equals(verifyUserRequest.getOtp()))
-			throw new UnauthorizedException("OTP is invalid or expired");
+			throw new AuthenticationException("OTP is invalid or expired");
 		if (user.getStatus().equals(UserStatus.INACTIVE)) {
 			user.setStatus(UserStatus.ACTIVE);
 		} else {
-			throw new UnauthorizedException("User is already verified");
+			throw new AuthenticationException("User is already verified");
 		}
 		redisService.delete(String.format("otp?email=%s", email));
 		return userRepository.save(user);

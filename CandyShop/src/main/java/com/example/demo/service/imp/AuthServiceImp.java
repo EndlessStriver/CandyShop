@@ -18,7 +18,7 @@ import com.example.demo.dto.LoginResponseDTO;
 import com.example.demo.dto.RegisterRequestDTO;
 import com.example.demo.dto.SendOtpRequest;
 import com.example.demo.exception.ResourceConflictException;
-import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.exception.AuthenticationException;
 import com.example.demo.model.User;
 import com.example.demo.model.enums.Gender;
 import com.example.demo.repository.UserRepository;
@@ -54,13 +54,13 @@ public class AuthServiceImp implements AuthService {
 	}
 
 	@Override
-	public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws Exception, UnauthorizedException {
+	public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws Exception, AuthenticationException {
 		try {
 			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
 					loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
 			if(authentication.isAuthenticated()) {
 				User user = userRepository.findByUserName(loginRequestDTO.getUsername())
-						.orElseThrow(() -> new UnauthorizedException("User not found"));
+						.orElseThrow(() -> new AuthenticationException("User not found"));
 				String token = jwtUtil.generateToken(user.getUserName());
 				LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
 				loginResponseDTO.setUserId(user.getUserId());
@@ -76,13 +76,12 @@ public class AuthServiceImp implements AuthService {
 				loginResponseDTO.setUpdatedAt(user.getUpdatedAt());
 				loginResponseDTO.setRole(user.getRole());
 				loginResponseDTO.setToken(token);
-				loginResponseDTO.setRefreshToken(token);
 				return loginResponseDTO;
 			} else {
 				throw new BadCredentialsException("Invalid username or password");
 			}
 		} catch (BadCredentialsException e) {
-			throw new UnauthorizedException(e.getMessage());
+			throw new AuthenticationException(e.getMessage());
 		} catch (Exception e) {
 			throw e;
 		}

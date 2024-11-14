@@ -27,5 +27,4 @@ public class LoginResponseDTO {
 	private LocalDateTime updatedAt;
 	private Role role;
 	private String token;
-	private String refreshToken;
 }

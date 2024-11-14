@@ -97,7 +97,7 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.userId = UUID.randomUUID().toString();
-        this.role = Role.CUSTOMER;
+        this.role = Role.USER;
         this.status = UserStatus.INACTIVE;
     }
 	
