@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,11 +64,11 @@ public class ProductController {
 				"Get all product success", HttpStatus.OK.value(), pagedResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createProduct(@Valid @ModelAttribute ProductRequestDTO productRequestDTO,
 			BindingResult bindingResult) throws IOException, Exception {
-		logger.info("Create product: {}", productRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			if (productRequestDTO.getMainImage().isEmpty())
@@ -77,29 +78,26 @@ public class ProductController {
 			});
 			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Create product failed: {}", apiResponseDTO);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
 		}
 		ProductResponseDTO product = productService.createProduct(productRequestDTO);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Create product success",
 				HttpStatus.CREATED.value(), product);
-		logger.info("Create product success: {}", apiResponseDTO);
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{productId}")
 	public ResponseEntity<?> deleteProduct(@PathVariable String productId) throws Exception {
-		logger.info("Delete product: {}", productId);
 		productService.deleteProduct(productId);
 		ApiResponseNoDataDTO apiResponseDTO = new ApiResponseNoDataDTO("Delete product success", HttpStatus.OK.value());
-		logger.info("Delete product success: {}", apiResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{productId}")
 	public ResponseEntity<?> updateProduct(@PathVariable String productId,
 			@Valid @ModelAttribute ProductRequestUpdateDTO productRequestUpdateDTO, BindingResult bindingResult) {
-		logger.info("Update product: {}", productRequestUpdateDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().forEach(error -> {
@@ -107,42 +105,38 @@ public class ProductController {
 			});
 			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Update product failed {}", apiResponseDTO);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
 		}
 		ProductResponseDTO product = productService.updateProduct(productId, productRequestUpdateDTO);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product success",
 				HttpStatus.OK.value(), product);
-		logger.info("Update product success: {}", apiResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{productId}/main-image")
 	public ResponseEntity<?> updateProductMainImage(@PathVariable String productId,
 			@RequestPart(value = "file") MultipartFile mainImage) throws IOException, Exception {
-		logger.info("Update product main image with productId {}", productId);
 		ProductResponseDTO product = productService.updateProductMainImage(productId, mainImage);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product main image success",
 				HttpStatus.OK.value(), product);
-		logger.info("Update product main image success: {}", apiResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{productId}/images")
 	public ResponseEntity<?> updateProductImages(@PathVariable String productId,
 			@RequestPart(value = "files") MultipartFile[] images) throws IOException, Exception {
-		logger.info("Update product images with productId {}", productId);
 		ProductResponseDTO product = productService.updateProductImages(productId, images);
 		ApiResponseDTO<ProductResponseDTO> apiResponseDTO = new ApiResponseDTO<>("Update product images success",
 				HttpStatus.OK.value(), product);
-		logger.info("Update product images success: {}", apiResponseDTO);
 		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/{productId}/price-histories")
 	public ResponseEntity<?> createPriceHistory(@PathVariable String productId,
 			@Valid @RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO, BindingResult bindingResult) {
-		logger.info("Create price history with productId {}", productId);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().forEach(error -> {
@@ -150,16 +144,14 @@ public class ProductController {
 			});
 			ApiResponseDTO<Map<String, Object>> apiResponseDTO = new ApiResponseDTO<>("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Create price history failed: {}", apiResponseDTO);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDTO);
 		}
 		PriceHistory priceHistory = productService.createPriceHistory(productId, priceHistoryRequestDTO);
 		ApiResponseDTO<PriceHistory> apiResponseDTO = new ApiResponseDTO<>("Add price history success",
 				HttpStatus.CREATED.value(), priceHistory);
-		logger.info("Create price history success: {}", apiResponseDTO);
 		return ResponseEntity.status(HttpStatus.CREATED).body(apiResponseDTO);
 	}
-
+	
 	@GetMapping("/{productId}/price-histories")
 	public ResponseEntity<?> getPriceHistoriesByProductId(@PathVariable String productId,
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit,

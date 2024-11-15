@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -73,50 +74,45 @@ public class ProvinceController {
 		return ResponseEntity.ok(response);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createProvince(@Valid @RequestBody ProvinceRequestDTO provinceRequestDTO,
 			BindingResult bindingResult) throws ResourceConflictException, Exception {
-		logger.info("Create province: {}", provinceRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Create province failed: {}", apiResponseErrorDTO);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Province myProvince = provinceService.createProvince(provinceRequestDTO);
 		ApiResponseDTO<Province> apiResponseDTO = new ApiResponseDTO<Province>("Create province success!",
 				HttpStatus.OK.value(), myProvince);
-		logger.info("Create province success: {}", apiResponseDTO);
 		return new ResponseEntity<ApiResponseDTO<Province>>(apiResponseDTO, HttpStatus.OK);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{idProvince}")
 	public ResponseEntity<?> updateProvince(@PathVariable String idProvince,
 			@Valid @RequestBody ProvinceRequestDTO provinceRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, ResourceConflictException, Exception {
-		logger.info("Update province: {}", provinceRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Update province failed: {}", apiResponseErrorDTO);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Province myProvince = provinceService.updateProvince(idProvince, provinceRequestDTO);
-		logger.info("Update province success: {}", myProvince);
 		return ResponseEntity
 				.ok(new ApiResponseDTO<Province>("Update province success!", HttpStatus.OK.value(), myProvince));
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{idProvince}")
 	public ResponseEntity<?> deleteProvince(@PathVariable String idProvince)
 			throws ResourceNotFoundException, Exception {
-		logger.info("Delete province: {}", idProvince);
 		provinceService.deleteProvince(idProvince);
-		logger.info("Delete province success with id: {}", idProvince);
 		return ResponseEntity.ok(new ApiResponseNoDataDTO("Delete province success!", HttpStatus.OK.value()));
 	}
 

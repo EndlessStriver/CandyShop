@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +38,8 @@ public class OrderController {
 	public OrderController(OrderService orderService) {
 		this.orderService = orderService;
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@GetMapping("/{orderId}")
 	public ResponseEntity<?> getOrderById(@PathVariable String orderId) {
 		Order order = orderService.getOrderById(orderId);
@@ -45,7 +47,8 @@ public class OrderController {
 				order);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping
 	public ResponseEntity<?> getAllOrders(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "0") int limit, @RequestParam(defaultValue = "createdAt") String sortField,
@@ -55,64 +58,58 @@ public class OrderController {
 				"Orders retrieved successfully", HttpStatus.OK.value(), orders);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
-		logger.info("Creating order with request: {}", orderRequestDTO);
 		if(bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().forEach(error -> {
 				errors.put(error.getField(), error.getDefaultMessage());
 			});
 			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", response);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 		Order order = orderService.createOrder(orderRequestDTO);
 		ApiResponseDTO<Order> response = new ApiResponseDTO<>("Order created successfully", HttpStatus.CREATED.value(),
 				order);
-		logger.info("Order created: {}", response);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PostMapping("/{orderId}/cancel")
 	public ResponseEntity<?> cancelOrder(@PathVariable String orderId) throws ResourceNotFoundException, Exception {
-		logger.info("Canceling order with id: " + orderId);
 		Order order = orderService.cancelOrder(orderId);
 		ApiResponseDTO<Order> response = new ApiResponseDTO<>("Order canceled successfully", HttpStatus.OK.value(),
 				order);
-		logger.info("Order canceled: {}", response);
 		return ResponseEntity.ok(response);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/{orderId}/confirm")
 	public ResponseEntity<?> confirmOrder(@PathVariable String orderId) throws ResourceNotFoundException, Exception {
-		logger.info("Confirming order with id: " + orderId);
 		Order order = orderService.confirmOrder(orderId);
 		ApiResponseDTO<Order> response = new ApiResponseDTO<>("Order confirmed successfully", HttpStatus.OK.value(),
 				order);
-		logger.info("Order confirmed: {}", response);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PostMapping("/{orderId}")
 	public ResponseEntity<?> updateOrder(@PathVariable String orderId, @Valid @RequestBody OrderRequestUpdateDTO orderRequestUpdateDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
-		logger.info("Updating order with request: {}", orderRequestUpdateDTO);
 		if(bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().forEach(error -> {
 				errors.put(error.getField(), error.getDefaultMessage());
 			});
 			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", response);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 		}
 		Order order = orderService.updateOrder(orderId, orderRequestUpdateDTO);
 		ApiResponseDTO<Order> response = new ApiResponseDTO<>("Order updated successfully", HttpStatus.OK.value(),
 				order);
-		logger.info("Order updated: {}", response);
 		return ResponseEntity.ok(response);
 	}
 }

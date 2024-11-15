@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -57,10 +56,7 @@ public class WebSecurityConfig {
 			corsConfig.setAllowedMethods(Arrays.asList(EndPoint.ALLOWED_METHODS));
 			corsConfig.setAllowCredentials(true);
 			return corsConfig;
-		})).authorizeHttpRequests(
-				authorizeRequests -> authorizeRequests.requestMatchers(HttpMethod.GET, EndPoint.PUBLIC_ENDPOINT_GET)
-						.permitAll().requestMatchers(HttpMethod.POST, EndPoint.PUBLIC_ENDPOINT_POST).permitAll()
-						.anyRequest().authenticated())
+		})).authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().permitAll())
 				.formLogin(formLogin -> formLogin.disable()).httpBasic(httpBasic -> httpBasic.disable())
 				.csrf(csrf -> csrf.disable());
 		http.sessionManagement(

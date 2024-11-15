@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,7 +41,8 @@ public class PublisherController {
 	public PublisherController(PublisherService publisherService) {
 		this.publisherService = publisherService;
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping
 	public ResponseEntity<?> getAllPublishers(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int limit,
@@ -51,7 +53,8 @@ public class PublisherController {
 				HttpStatus.OK.value(), publishers);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{publisherId}")
 	public ResponseEntity<?> getPublisher(@PathVariable String publisherId) {
 		Publisher publisher = publisherService.getPublisher(publisherId);
@@ -59,52 +62,47 @@ public class PublisherController {
 				HttpStatus.OK.value(), publisher);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createPublisher(@Valid @RequestBody PublisherRequestDTO publisherRequestDTO,
 			BindingResult bindingResult) {
-		logger.info("Creating publisher: {}", publisherRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Publisher publisher = publisherService.createPublisher(publisherRequestDTO);
 		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher created successfully",
 				HttpStatus.CREATED.value(), publisher);
-		logger.info("Publisher created: {}", publisher);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{publisherId}")
 	public ResponseEntity<?> updatePublisher(@PathVariable String publisherId,
 			@Valid @RequestBody PublisherRequestUpdateDTO publisherRequestUpdateDTO, BindingResult bindingResult) {
-		logger.info("Updating publisher with ID: {}, {}", publisherId, publisherRequestUpdateDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Publisher publisher = publisherService.updatePublisher(publisherId, publisherRequestUpdateDTO);
 		ApiResponseDTO<Publisher> response = new ApiResponseDTO<>("Publisher updated successfully",
 				HttpStatus.OK.value(), publisher);
-		logger.info("Publisher updated: {}", publisher);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{publisherId}")
 	public ResponseEntity<?> deletePublisher(@PathVariable String publisherId) {
-		logger.info("Deleting publisher with ID: {}", publisherId);
 		publisherService.deletePublisher(publisherId);
 		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Publisher deleted successfully",
 				HttpStatus.OK.value());
-		logger.info("Publisher deleted with ID: {}", publisherId);
 		return ResponseEntity.ok(response);
 	}
 

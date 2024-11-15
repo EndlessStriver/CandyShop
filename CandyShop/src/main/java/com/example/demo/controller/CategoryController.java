@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,10 +65,10 @@ public class CategoryController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{categoryId}")
 	public ResponseEntity<?> updateCategory(@PathVariable String categoryId,
 			@Valid @RequestBody CategoryRequestDTO categoryName, BindingResult bindingResult) {
-		logger.info("Update category by id: " + categoryId);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().stream().forEach(result -> {
@@ -75,21 +76,18 @@ public class CategoryController {
 			});
 			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Update Category Failed!",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error(
-					"Update Category Failed With Category Id: " + categoryId + " and category update detail: " + categoryName);
 			return ResponseEntity.badRequest().body(error);
 		}
 		Category category = categoryService.updateCategory(categoryId, categoryName);
 		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category updated successfully", HttpStatus.OK.value(),
 				category);
-		logger.info("Update category successfully with category id: " + categoryId + " and category update detail: " + categoryName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryRequestDTO categoryName,
 			BindingResult bindingResult) {
-		logger.info("Create category with information: " + categoryName);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().stream().forEach(result -> {
@@ -97,23 +95,20 @@ public class CategoryController {
 			});
 			ApiResponseErrorDTO error = new ApiResponseErrorDTO("Create Category Failed!",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Create category failed with information: " + categoryName);
 			return ResponseEntity.badRequest().body(error);
 		}
 		Category category = categoryService.createCategory(categoryName);
 		ApiResponseDTO<Category> response = new ApiResponseDTO<>("Category created successfully",
 				HttpStatus.CREATED.value(), category);
-		logger.info("Category created successfully with information: " + categoryName);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{categoryId}")
 	public ResponseEntity<?> deleteCategory(@PathVariable String categoryId) {
-		logger.info("Delete category by id: " + categoryId);
 		categoryService.deleteCategory(categoryId);
 		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Category deleted successfully",
 				HttpStatus.OK.value());
-		logger.info("Category deleted successfully with category id: " + categoryId);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -53,7 +54,8 @@ public class UserController {
 		this.userService = userService;
 		this.orderService = orderService;
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@GetMapping("/{userId}/addresses/{addressId}")
 	public ResponseEntity<?> getAddress(@PathVariable String userId, @PathVariable String addressId) throws Exception {
 		Address address = userService.getAddress(userId, addressId);
@@ -61,7 +63,8 @@ public class UserController {
 				address);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@GetMapping("/{userId}/addresses")
 	public ResponseEntity<?> getAddresses(@PathVariable String userId) throws Exception {
 		List<Address> addresses = userService.getAddresses(userId);
@@ -69,7 +72,8 @@ public class UserController {
 				HttpStatus.OK.value(), addresses);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@GetMapping("/{userId}/orders")
 	public ResponseEntity<?> getOrders(@PathVariable String userId, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "0") int limit, @RequestParam(defaultValue = "createdAt") String sortField,
@@ -80,7 +84,8 @@ public class UserController {
 				"Orders retrieved successfully", HttpStatus.OK.value(), pagedResponseDTO);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@GetMapping("/{userId}")
 	public ResponseEntity<?> getUser(@PathVariable String userId) throws ResourceNotFoundException {
 		User user = userService.getUserById(userId);
@@ -88,143 +93,126 @@ public class UserController {
 				user);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PatchMapping("/{userId}")
 	public ResponseEntity<?> updateUser(@PathVariable String userId,
 			@Valid @RequestBody UserProfileRequestDTO userProfileRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
-		logger.info("User profile request: {}", userProfileRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		User user = userService.updateUser(userId, userProfileRequestDTO);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("User updated successfully", HttpStatus.OK.value(), user);
-		logger.info("User updated successfully: {}", user);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PatchMapping("/{userId}/password")
 	public ResponseEntity<?> changePassword(@PathVariable String userId,
 			@Valid @RequestBody ChangePasswordRequestDTO changePasswordRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {
-		logger.info("Change password request for user: {}", userId);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		userService.changePassword(userId, changePasswordRequestDTO);
 		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Password changed successfully",
 				HttpStatus.OK.value());
-		logger.info("Password changed successfully for user: {}", userId);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PatchMapping("/{userId}/avatar")
 	public ResponseEntity<?> uploadAvatar(@PathVariable String userId,
 			@RequestPart(value = "file") MultipartFile multipartFile) throws Exception {
-		logger.info("Upload avatar request for user: {}", userId);
 		User user = userService.uploadAvatar(userId, multipartFile);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("Avatar uploaded successfully", HttpStatus.OK.value(),
 				user);
-		logger.info("Avatar uploaded successfully for user: {}", userId);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PatchMapping("/{userId}/email")
 	public ResponseEntity<?> changeEmail(@PathVariable String userId,
 			@Valid @RequestBody ChangeEmailRequestDTO changeEmailRequestDTO, BindingResult bindingResult)
 			throws Exception {
-		logger.info("Change email request for user id: " + userId + " email: " + changeEmailRequestDTO.getNewEmail());
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		User user = userService.changeEmail(userId, changeEmailRequestDTO);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("Email changed successfully", HttpStatus.OK.value(), user);
-		logger.info(
-				"Email changed successfully for user id: " + userId + " email: " + changeEmailRequestDTO.getNewEmail());
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PostMapping("/{userId}/addresses")
 	public ResponseEntity<?> createAddress(@PathVariable String userId, @Valid @RequestBody AddressRequestDTO address,
 			BindingResult bindingResult) throws Exception {
-		logger.info("Create address request for user id: " + userId + " address: " + address);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Address newAddress = userService.createAddress(userId, address);
 		ApiResponseDTO<Address> response = new ApiResponseDTO<>("Address created successfully",
 				HttpStatus.CREATED.value(), newAddress);
-		logger.info("Address created successfully for user id: " + userId + " address: " + address);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PatchMapping("/{userId}/addresses/{addressId}")
 	public ResponseEntity<?> updateAddress(@PathVariable String userId, @PathVariable String addressId,
 			@Valid @RequestBody AddressRequestUpdateDTO addressRequestUpdateDTO, BindingResult bindingResult)
 			throws Exception {
-		logger.info("Update address request for user id: " + userId + " address id: " + addressId + " address: "
-				+ addressRequestUpdateDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		Address updatedAddress = userService.updateAddress(userId, addressId, addressRequestUpdateDTO);
 		ApiResponseDTO<Address> response = new ApiResponseDTO<>("Address updated successfully", HttpStatus.OK.value(),
 				updatedAddress);
-		logger.info("Address updated successfully for user id: " + userId + " address id: " + addressId + " address: "
-				+ addressRequestUpdateDTO);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@DeleteMapping("/{userId}/addresses/{addressId}")
 	public ResponseEntity<?> deleteAddress(@PathVariable String userId, @PathVariable String addressId)
 			throws Exception {
-		logger.info("Delete address request for user id: " + userId + " address id: " + addressId);
 		userService.deleteAddress(userId, addressId);
 		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Address deleted successfully", HttpStatus.OK.value());
-		logger.info("Address deleted successfully for user id: " + userId + " address id: " + addressId);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PostMapping("/{userId}/verify")
 	public ResponseEntity<?> verifyUser(@PathVariable String userId,
 			@Valid @RequestBody VerifyUserRequest verifyUserRequest, BindingResult bindingResult) throws Exception {
-		logger.info("Verify user request for user id: " + userId + " code: " + verifyUserRequest.getOtp());
 		if (bindingResult.hasErrors()) {
 			Map<String, String> errors = bindingResult.getFieldErrors().stream()
 					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 			ApiResponseErrorDTO apiResponseErrorDTO = new ApiResponseErrorDTO("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: {}", errors);
 			return new ResponseEntity<ApiResponseErrorDTO>(apiResponseErrorDTO, HttpStatus.BAD_REQUEST);
 		}
 		User user = userService.verifyUser(userId, verifyUserRequest);
 		ApiResponseDTO<User> response = new ApiResponseDTO<>("User verified successfully", HttpStatus.OK.value(), user);
-		logger.info("User verified successfully for user id: " + userId + " code: " + verifyUserRequest.getOtp());
 		return ResponseEntity.ok(response);
 	}
 

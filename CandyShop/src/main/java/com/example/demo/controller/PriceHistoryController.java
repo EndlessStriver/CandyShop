@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,7 @@ public class PriceHistoryController {
 		this.priceHistoryService = priceHistoryService;
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/{priceHistoryId}")
 	public ResponseEntity<?> getPriceHistory(@PathVariable String priceHistoryId) {
 		PriceHistory priceHistory = priceHistoryService.getPriceHistory(priceHistoryId);
@@ -43,31 +45,28 @@ public class PriceHistoryController {
 		return ResponseEntity.ok(response);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{priceHistoryId}")
 	public ResponseEntity<?> deletePriceHistory(@PathVariable String priceHistoryId) {
-		logger.info("Deleting price history with id: " + priceHistoryId);
 		priceHistoryService.deletePriceHistory(priceHistoryId);
 		ApiResponseNoDataDTO response = new ApiResponseNoDataDTO("Price history deleted", HttpStatus.OK.value());
-		logger.info("Price history deleted with id: " + priceHistoryId);
 		return ResponseEntity.ok(response);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{priceHistoryId}")
 	public ResponseEntity<?> updatePriceHistory(@PathVariable String priceHistoryId,
 			@Valid @RequestBody PriceHistoryRequestDTO priceHistoryRequestDTO, BindingResult bindingResult) {
-		logger.info("Updating price history with id: " + priceHistoryId + " with data: " + priceHistoryRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<String, Object>();
 			bindingResult.getFieldErrors().forEach(error -> {
 				errors.put(error.getField(), error.getDefaultMessage());
 			});
 			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed", HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed for updating price history with id: " + priceHistoryId + " with data: " + priceHistoryRequestDTO + " with errors: " + errors);
 			return ResponseEntity.badRequest().body(response);
 		}
 		PriceHistory priceHistory = priceHistoryService.updatePriceHistory(priceHistoryId, priceHistoryRequestDTO);
 		ApiResponseDTO<PriceHistory> response = new ApiResponseDTO<>("Price history updated", HttpStatus.OK.value(), priceHistory);
-		logger.info("Price history updated with id: " + priceHistoryId + " with data: " + priceHistoryRequestDTO);
 		return ResponseEntity.ok(response);
 	}
 

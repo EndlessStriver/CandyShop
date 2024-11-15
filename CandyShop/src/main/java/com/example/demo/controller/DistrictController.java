@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,12 +62,12 @@ public class DistrictController {
 				HttpStatus.OK.value(), wards);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/{idProvince}")
 	public ResponseEntity<?> createDistrict(@PathVariable String idProvince,
 			@Valid @RequestBody DistrictRequestDTO districtRequestDTO, BindingResult bindingResult)
 			throws ResourceConflictException, Exception {
-		logger.info("Create district with province id " + idProvince + " and district info: " + districtRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<>();
 			bindingResult.getFieldErrors().forEach(error -> {
@@ -74,20 +75,18 @@ public class DistrictController {
 			});
 			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: " + errors);
 			return ResponseEntity.badRequest().body(response);
 		}
 		District district = districtService.createDistrict(idProvince, districtRequestDTO);
 		ApiResponseDTO<District> response = new ApiResponseDTO<>("Create district successfully",
 				HttpStatus.CREATED.value(), district);
-		logger.info("Create district successfully: " + district);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{idDistrict}")
 	public ResponseEntity<?> updateDistrict(@PathVariable String idDistrict,
 			@Valid @RequestBody DistrictRequestDTO districtRequestDTO, BindingResult bindingResult) throws Exception {
-		logger.info("Update district with id " + idDistrict + " and district info: " + districtRequestDTO);
 		if (bindingResult.hasErrors()) {
 			Map<String, Object> errors = new LinkedHashMap<>();
 			bindingResult.getFieldErrors().forEach(error -> {
@@ -95,16 +94,15 @@ public class DistrictController {
 			});
 			ApiResponseDTO<Map<String, Object>> response = new ApiResponseDTO<>("Validation failed",
 					HttpStatus.BAD_REQUEST.value(), errors);
-			logger.error("Validation failed: " + errors);
 			return ResponseEntity.badRequest().body(response);
 		}
 		District district = districtService.updateDistrict(idDistrict, districtRequestDTO);
 		ApiResponseDTO<District> response = new ApiResponseDTO<>("Update district successfully", HttpStatus.OK.value(),
 				district);
-		logger.info("Update district successfully: " + district);
 		return ResponseEntity.ok(response);
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{idDistrict}")
 	public ResponseEntity<?> deleteDistrict(@PathVariable String idDistrict) throws Exception {
 		logger.info("Delete district with id: " + idDistrict);
