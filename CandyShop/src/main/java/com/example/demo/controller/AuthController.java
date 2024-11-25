@@ -38,7 +38,7 @@ public class AuthController {
 	public AuthController(AuthService authService) {
 		this.authService = authService;
 	}
-
+	
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO, BindingResult bindingResult)
 			throws Exception, AuthenticationException {

@@ -56,12 +56,14 @@ public class WebSecurityConfig {
 			corsConfig.setAllowedMethods(Arrays.asList(EndPoint.ALLOWED_METHODS));
 			corsConfig.setAllowCredentials(true);
 			return corsConfig;
-		})).authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().permitAll())
-				.formLogin(formLogin -> formLogin.disable()).httpBasic(httpBasic -> httpBasic.disable())
-				.csrf(csrf -> csrf.disable());
-		http.sessionManagement(
-				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+		}));
+		http.authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().permitAll())
+				.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+				
+		http.formLogin(formLogin -> formLogin.disable());
+		http.httpBasic(httpBasic -> httpBasic.disable());
+		http.csrf(csrf -> csrf.disable());
+		http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		return http.build();
 	}
 }

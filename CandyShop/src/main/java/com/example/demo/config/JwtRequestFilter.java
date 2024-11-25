@@ -1,16 +1,16 @@
 package com.example.demo.config;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.demo.exception.AuthenticationException;
@@ -38,12 +38,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		try {
+			
 			String requestURI = request.getRequestURI();
-			if (Arrays.asList(EndPoint.PUBLIC_ENDPOINT_POST).contains(requestURI)
-					|| checkEndpointSwaggger(requestURI)) {
-				filterChain.doFilter(request, response);
-				return;
-			}
+	        String requestMethod = request.getMethod();
+
+	        if (shouldBypassFilter(requestURI, requestMethod)) {
+	            filterChain.doFilter(request, response);
+	            return;
+	        }
 
 			final String authorizationHeader = request.getHeader("Authorization");
 
@@ -85,10 +87,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		}
 	}
 	
-	private boolean checkEndpointSwaggger(String requestURI) {
-		String regex = "(swagger-ui|v3/api-docs)";
-		Pattern pattern = Pattern.compile(regex);
-		return pattern.matcher(requestURI).find();
+	private boolean shouldBypassFilter(String requestURI, String requestMethod) {
+		
+		PathMatcher pathMatcher = new AntPathMatcher();
+		
+		if(requestMethod.equals("POST")) {
+			for (String endpoint : EndPoint.PUBLIC_METHODS_POST) {
+				if (pathMatcher.match(endpoint, requestURI) && requestMethod.equals("POST")) return true;
+			}
+		}
+		
+		if(requestMethod.equals("GET")) {
+			for (String endpoint : EndPoint.PUBLIC_METHODS_GET) {
+				if (pathMatcher.match(endpoint, requestURI) && requestMethod.equals("GET")) return true;
+			}
+		}
+		return false;
 	}
 
 }
