@@ -59,7 +59,7 @@ public class OrderController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 	@PostMapping
 	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO, BindingResult bindingResult)
 			throws ResourceNotFoundException, Exception {

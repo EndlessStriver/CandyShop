@@ -40,6 +40,7 @@ private String note;
 	@NotBlank(message = "Ward is required")
 	private String wardId;
 	
+	@NotBlank(message = "User is required")
 	private String userId;
 	
 	@NotNull(message = "Order details is required")

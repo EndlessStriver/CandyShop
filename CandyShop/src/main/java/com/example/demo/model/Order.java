@@ -68,7 +68,7 @@ public class Order {
 	private OrderStatus status;
 	
 	@ManyToOne(cascade = CascadeType.REFRESH)
-	@JoinColumn(name = "user_id", nullable = true)
+	@JoinColumn(name = "user_id", nullable = false)
 	@JsonIgnore
 	private User user;
 	

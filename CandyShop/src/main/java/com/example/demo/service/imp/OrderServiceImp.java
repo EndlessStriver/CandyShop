@@ -60,12 +60,10 @@ public class OrderServiceImp implements OrderService {
 	@Override
 	public Order createOrder(OrderRequestDTO orderRequestDTO) throws ResourceNotFoundException, Exception {
 
-		User user = null;
-		if (orderRequestDTO.getUserId() != null) {
-			user = userService.getUserById(orderRequestDTO.getUserId());
-			if (user.getStatus() != UserStatus.ACTIVE) throw new BadRequestException("status", "Account is not active to create order");
-		}
-			
+		User user = userService.getUserById(orderRequestDTO.getUserId());
+		if (user.getStatus() != UserStatus.ACTIVE)
+			throw new BadRequestException("status", "Account is not active to create order");
+
 		Province province = provinceService.getProvince(orderRequestDTO.getProvinceId());
 		District district = districtService.getDistrict(orderRequestDTO.getDistrictId());
 		Ward ward = wardService.getWard(orderRequestDTO.getWardId());
@@ -79,14 +77,14 @@ public class OrderServiceImp implements OrderService {
 		order.setDistrict(district);
 		order.setWard(ward);
 		order.setUser(user);
-		
+
 		List<OrderDetail> orderDetails = new ArrayList<>();
 		orderRequestDTO.getOrderDetails().forEach(orderDetailRequest -> {
 			OrderDetail orderDetail = new OrderDetail();
-			
+
 			Product product = productService.findProduct(orderDetailRequest.getProductId());
 			PriceHistory priceHistory = priceHistoryService.getPriceHistory(orderDetailRequest.getPriceHistoryId());
-			
+
 			orderDetail.setOrder(order);
 			orderDetail.setQuantity(orderDetailRequest.getQuantity());
 			orderDetail.setProduct(product);
@@ -94,7 +92,7 @@ public class OrderServiceImp implements OrderService {
 			orderDetails.add(orderDetail);
 		});
 		order.setOrderDetails(orderDetails);
-		
+
 		return orderRepository.save(order);
 	}
 
@@ -105,20 +103,29 @@ public class OrderServiceImp implements OrderService {
 
 	@Override
 	public Order cancelOrder(String orderId) throws BadRequestException {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("status", "Order can not be canceled");
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+		if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION)
+			throw new BadRequestException("status", "Order can not be canceled");
 		order.setStatus(OrderStatus.CANCELLED);
 		return orderRepository.save(order);
 	}
 
 	@Override
-	public Order updateOrder(String orderId, OrderRequestUpdateDTO orderRequestUpdateDTO) throws ResourceNotFoundException, BadRequestException, Exception {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("status", "Order can not be updated");
-		if (orderRequestUpdateDTO.getNote() != null) order.setNote(orderRequestUpdateDTO.getNote());
-		if (orderRequestUpdateDTO.getAddress() != null) order.setAddress(orderRequestUpdateDTO.getAddress());
-		if (orderRequestUpdateDTO.getCustomerName() != null) order.setCustomerName(orderRequestUpdateDTO.getCustomerName());
-		if (orderRequestUpdateDTO.getPhoneNumber() != null) order.setPhoneNumber(orderRequestUpdateDTO.getPhoneNumber());
+	public Order updateOrder(String orderId, OrderRequestUpdateDTO orderRequestUpdateDTO)
+			throws ResourceNotFoundException, BadRequestException, Exception {
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+		if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION)
+			throw new BadRequestException("status", "Order can not be updated");
+		if (orderRequestUpdateDTO.getNote() != null)
+			order.setNote(orderRequestUpdateDTO.getNote());
+		if (orderRequestUpdateDTO.getAddress() != null)
+			order.setAddress(orderRequestUpdateDTO.getAddress());
+		if (orderRequestUpdateDTO.getCustomerName() != null)
+			order.setCustomerName(orderRequestUpdateDTO.getCustomerName());
+		if (orderRequestUpdateDTO.getPhoneNumber() != null)
+			order.setPhoneNumber(orderRequestUpdateDTO.getPhoneNumber());
 		if (orderRequestUpdateDTO.getProvinceId() != null) {
 			Province province = provinceService.getProvince(orderRequestUpdateDTO.getProvinceId());
 			order.setProvince(province);
@@ -135,11 +142,13 @@ public class OrderServiceImp implements OrderService {
 	}
 
 	@Override
-	public PagedResponseDTO<OrderPageResponseDTO> getAllOrders(int page, int limit, String sortField, String sortOrder) {
-		Sort sort = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+	public PagedResponseDTO<OrderPageResponseDTO> getAllOrders(int page, int limit, String sortField,
+			String sortOrder) {
+		Sort sort = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
 		Pageable pageable = PageRequest.of(page, limit, sort);
 		Page<Order> pageOrder = orderRepository.findAll(pageable);
-		
+
 		PagedResponseDTO<OrderPageResponseDTO> pagedResponse = new PagedResponseDTO<>();
 		List<OrderPageResponseDTO> content = new ArrayList<>();
 		pageOrder.getContent().forEach(order -> {
@@ -150,17 +159,18 @@ public class OrderServiceImp implements OrderService {
 		pagedResponse.setTotalElements(pageOrder.getTotalElements());
 		pagedResponse.setTotalPages(pageOrder.getTotalPages());
 		pagedResponse.setPageNumber(pageOrder.getNumber());
-		
+
 		return pagedResponse;
 	}
 
 	@Override
-	public PagedResponseDTO<OrderPageResponseDTO> getOrdersByUserId(String userId, int page, int limit, String sortField,
-			String sortOrder) {
-		Sort sort = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+	public PagedResponseDTO<OrderPageResponseDTO> getOrdersByUserId(String userId, int page, int limit,
+			String sortField, String sortOrder) {
+		Sort sort = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
 		Pageable pageable = PageRequest.of(page, limit, sort);
 		Page<Order> pageOrder = orderRepository.findByUserUserId(userId, pageable);
-		
+
 		PagedResponseDTO<OrderPageResponseDTO> pagedResponse = new PagedResponseDTO<>();
 		List<OrderPageResponseDTO> content = new ArrayList<>();
 		pageOrder.getContent().forEach(order -> {
@@ -171,31 +181,33 @@ public class OrderServiceImp implements OrderService {
 		pagedResponse.setTotalElements(pageOrder.getTotalElements());
 		pagedResponse.setTotalPages(pageOrder.getTotalPages());
 		pagedResponse.setPageNumber(pageOrder.getNumber());
-		
+
 		return pagedResponse;
 	}
-	
+
 	private OrderPageResponseDTO convertToOrderPageResponseDTO(Order order) {
-        OrderPageResponseDTO orderPageResponseDTO = new OrderPageResponseDTO();
-        orderPageResponseDTO.setOrderId(order.getOrderId());
-        orderPageResponseDTO.setCustomerName(order.getCustomerName());
-        orderPageResponseDTO.setPhoneNumber(order.getPhoneNumber());
-        orderPageResponseDTO.setAddress(order.getAddress());
-        orderPageResponseDTO.setNote(order.getNote());
-        orderPageResponseDTO.setStatus(order.getStatus());
-        orderPageResponseDTO.setProvince(order.getProvince());
-        orderPageResponseDTO.setDistrict(order.getDistrict());
-        orderPageResponseDTO.setWardId(order.getWard());
-        orderPageResponseDTO.setCreatedAt(order.getCreatedAt());
-        orderPageResponseDTO.setUpdatedAt(order.getUpdatedAt());
-        orderPageResponseDTO.setTotalAmount(order.getTotalAmount());
-        return orderPageResponseDTO;
-    }
+		OrderPageResponseDTO orderPageResponseDTO = new OrderPageResponseDTO();
+		orderPageResponseDTO.setOrderId(order.getOrderId());
+		orderPageResponseDTO.setCustomerName(order.getCustomerName());
+		orderPageResponseDTO.setPhoneNumber(order.getPhoneNumber());
+		orderPageResponseDTO.setAddress(order.getAddress());
+		orderPageResponseDTO.setNote(order.getNote());
+		orderPageResponseDTO.setStatus(order.getStatus());
+		orderPageResponseDTO.setProvince(order.getProvince());
+		orderPageResponseDTO.setDistrict(order.getDistrict());
+		orderPageResponseDTO.setWardId(order.getWard());
+		orderPageResponseDTO.setCreatedAt(order.getCreatedAt());
+		orderPageResponseDTO.setUpdatedAt(order.getUpdatedAt());
+		orderPageResponseDTO.setTotalAmount(order.getTotalAmount());
+		return orderPageResponseDTO;
+	}
 
 	@Override
 	public Order confirmOrder(String orderId) throws BadRequestException {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-		if(order.getStatus() != OrderStatus.PENDING_CONFIRMATION) throw new BadRequestException("status", "Order can not be confirmed");
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+		if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION)
+			throw new BadRequestException("status", "Order can not be confirmed");
 		order.setStatus(OrderStatus.PENDING_PAYMENT);
 		return orderRepository.save(order);
 	}
