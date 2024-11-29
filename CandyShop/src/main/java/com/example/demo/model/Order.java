@@ -73,7 +73,6 @@ public class Order {
 	private User user;
 	
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JsonIgnore
 	private List<OrderDetail> orderDetails = new ArrayList<>();
 	
 	@Column(name = "created_at", nullable = false)
