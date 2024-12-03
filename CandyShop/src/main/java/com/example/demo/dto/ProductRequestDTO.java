@@ -23,7 +23,6 @@ public class ProductRequestDTO {
 	
 	private String description;
 	
-	@NotBlank(message = "Dimension is required")
 	@Pattern(regexp = "^[0-9]+x[0-9]+x[0-9]+$", message = "Dimension must be in the format of 'x' separated numbers")
 	private String dimension;
 	

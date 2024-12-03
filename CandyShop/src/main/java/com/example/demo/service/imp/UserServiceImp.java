@@ -75,7 +75,7 @@ public class UserServiceImp implements UserService {
 		String firstName = profileRequestDTO.getFirstName();
 		String lastName = profileRequestDTO.getLastName();
 		String phoneNumber = profileRequestDTO.getPhoneNumber();
-		Gender gender = profileRequestDTO.getGender();
+		String gender = profileRequestDTO.getGender();
 		LocalDate birthDay = profileRequestDTO.getBirthDay();
 
 		if (firstName != null)
@@ -85,7 +85,7 @@ public class UserServiceImp implements UserService {
 		if (phoneNumber != null)
 			user.setPhoneNumber(phoneNumber);
 		if (gender != null)
-			user.setGender(profileRequestDTO.getGender());
+			user.setGender(Gender.valueOf(profileRequestDTO.getGender()));
 		if (birthDay != null)
 			user.setBirthDay(profileRequestDTO.getBirthDay());
 
